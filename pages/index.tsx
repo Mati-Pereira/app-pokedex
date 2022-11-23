@@ -15,6 +15,7 @@ const Index: NextPage = () => {
   const [pokemon, setPokemon] = useState<PokemonDetails[]>([])
   const [off, setOff] = useState(0)
   const [currentPage, setCurrentPage] = useState(1);
+  const [darkMode, setDarkMode] = useState(false)
 
 
   useEffect(() => {
@@ -36,25 +37,31 @@ const Index: NextPage = () => {
     setOff((page - 1) * 9)
     setCurrentPage(page)
   }
+  const handleDark = () => {
+    setDarkMode(!darkMode)
+  }
 
   return (
-    <>
-      <h1>Olá</h1>
-      <Grid>
-        {
-          pokemon.map((pokemon: PokemonDetails) => (
-            <Pokemon key={pokemon.id} image={pokemon.sprites.front_default} text={pokemon.name} types={pokemon.types} />
-          ))
-        }
-      </Grid>
-      <div className="w-[80%] mx-auto">
-        <Pagination
-          current={currentPage}
-          total={pageCount}
-          onPageChange={handlePageChange}
-        />
+    <div className={darkMode ? "dark" : ""}>
+      <button onClick={handleDark}> clique</button>
+      <div className="bg-slate-100 dark:bg-slate-800 dark:text-slate-50 px-6 py-8 ring-1 ring-slate-900/5 shadow-xl">
+        <h1>Olá</h1>
+        <Grid>
+          {
+            pokemon.map((pokemon: PokemonDetails) => (
+              <Pokemon key={pokemon.id} image={pokemon.sprites.front_default} text={pokemon.name} types={pokemon.types} />
+            ))
+          }
+        </Grid>
+        <div className="w-[80%] mx-auto">
+          <Pagination
+            current={currentPage}
+            total={pageCount}
+            onPageChange={handlePageChange}
+          />
+        </div>
       </div>
-    </>
+    </div>
   )
 }
 

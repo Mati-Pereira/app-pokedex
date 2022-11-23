@@ -11,13 +11,10 @@ interface PokemonProps {
 
 function Pokemon({ image, text, types }: PokemonProps) {
   return (
-    <div className="rounded overflow-hidden shadow-lg">
+    <div className="rounded bg-gray-200 overflow-hidden shadow-lg dark:bg-sky-900">
       <img className="w-full" src={image} alt="Mountain" />
-      <div className="px-6 py-4">
+      <div className="px-6 py-4 ">
         <div className="font-bold text-xl mb-2">{text}</div>
-        <p className="text-gray-700 text-base">
-          alguma coisa
-        </p>
         <div className="flex">
           {types.map(type => (
             <Types key={type.type.name} pokemonType={type.type.name} />
