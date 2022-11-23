@@ -1,26 +1,29 @@
 /* eslint-disable @next/next/no-img-element */
+
 import { Type } from "../types/pokemonDetails";
+import Types from "./Types";
 
 interface PokemonProps {
   image: string;
   text: string;
-  description: any;
+  types: Type[];
 }
 
-function Pokemon({ image, text, description }: PokemonProps) {
+function Pokemon({ image, text, types }: PokemonProps) {
   return (
-    <div className="cursor-pointer">
-      <figure>
-        <img src={image} className="rounded-t h-72 w-full object-cover" alt="pokemon" />
-        <figcaption className="p-4">
-          <p className="text-lg mb-4 font-bold leading-relaxed text-gray-800 dark:text-gray-300" >
-            {text}
-          </p>
-          <small className="leading-5 text-gray-500 dark:text-gray-400">
-            {description}
-          </small>
-        </figcaption>
-      </figure>
+    <div className="rounded overflow-hidden shadow-lg">
+      <img className="w-full" src={image} alt="Mountain" />
+      <div className="px-6 py-4">
+        <div className="font-bold text-xl mb-2">{text}</div>
+        <p className="text-gray-700 text-base">
+          alguma coisa
+        </p>
+        <div className="flex">
+          {types.map(type => (
+            <Types key={type.type.name} pokemonType={type.type.name} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
