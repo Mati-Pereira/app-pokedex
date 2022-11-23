@@ -45,7 +45,6 @@ const Index: NextPage = () => {
     <div className={darkMode ? "dark" : ""}>
       <div className="bg-slate-100 dark:bg-slate-800 dark:text-slate-50 px-6 py-8 ring-1 ring-slate-900/5 shadow-xl">
         <Navbar onChange={handleChange} />
-
         <Grid>
           {
             pokemon.map((pokemon: PokemonDetails) => (
