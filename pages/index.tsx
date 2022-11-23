@@ -1,8 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 import type { NextPage } from "next";
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import Pagination from 'react-responsive-pagination';
 import Grid from "../components/Grid";
+import Navbar from "../components/Navbar";
 import Pokemon from "../components/Pokemon";
 
 import { PokemonDetails } from "../types/pokemonDetails";
@@ -15,8 +16,7 @@ const Index: NextPage = () => {
   const [pokemon, setPokemon] = useState<PokemonDetails[]>([])
   const [off, setOff] = useState(0)
   const [currentPage, setCurrentPage] = useState(1);
-  const [darkMode, setDarkMode] = useState(false)
-
+  const [darkMode, setDarkMode] = useState<'dark' | ''>()
 
   useEffect(() => {
     async function getData() {
@@ -37,15 +37,15 @@ const Index: NextPage = () => {
     setOff((page - 1) * 9)
     setCurrentPage(page)
   }
-  const handleDark = () => {
-    setDarkMode(!darkMode)
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    event.target.checked ? setDarkMode('dark') : setDarkMode('')
   }
 
   return (
     <div className={darkMode ? "dark" : ""}>
-      <button onClick={handleDark}> clique</button>
       <div className="bg-slate-100 dark:bg-slate-800 dark:text-slate-50 px-6 py-8 ring-1 ring-slate-900/5 shadow-xl">
-        <h1>Olá</h1>
+        <Navbar onChange={handleChange} />
+
         <Grid>
           {
             pokemon.map((pokemon: PokemonDetails) => (
