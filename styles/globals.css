@@ -5,14 +5,13 @@
 .pagination {
   justify-content: center;
   display: flex;
-  padding-left: 0;
   list-style: none;
 }
 
 .page-item .page-link {
   position: relative;
   display: block;
-  margin: 0 5px;
+  margin: 0px;
   min-height: 40px;
   min-width: 40px;
   border-radius: 20px;

@@ -53,12 +53,11 @@ const Index: NextPage = () => {
             ))
           }
         </Grid>
-        <div className="w- mx-auto">
+        <div className="w-1 mx-auto">
           <Pagination
             current={currentPage}
             total={pageCount}
             onPageChange={handlePageChange}
-
           />
         </div>
       </div>
