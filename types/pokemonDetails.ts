@@ -19,7 +19,7 @@ export interface PokemonDetails {
   weight: number;
 }
 
-interface Type {
+export interface Type {
   slot: number;
   type: Ability;
 }
