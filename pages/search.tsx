@@ -34,7 +34,7 @@ const Search = () => {
       const res = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=0&limit=100000`)
       const data = await res.json()
       const pokemons = data?.results
-      const filteredPokemons = pokemons.filter((pokemon: { name: string, url: string }) => pokemon.name.includes(input))
+      const filteredPokemons = pokemons.filter((pokemon: { name: string, url: string }) => pokemon.name.includes(input.toLowerCase()))
       const promises = filteredPokemons.map(async (pokemon: any) => {
         const res = await fetch(pokemon.url)
         const data = await res.json()
