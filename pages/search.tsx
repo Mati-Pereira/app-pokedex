@@ -6,64 +6,47 @@ import Pagination from 'react-responsive-pagination';
 import Pokemon from '../components/Pokemon';
 import { InputContext } from '../context/InputPokemon';
 import { PokemonDetails } from '../types/pokemonDetails';
-
 const Search = () => {
   const [allfilterPokemon, setAllFilterPokemon] = useState<PokemonDetails[]>([]);
   const [actualFilterPokemon, setActualFilterPokemon] = useState<PokemonDetails[]>([])
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false)
-
   const { input } = useContext(InputContext)
   const router = useRouter()
-
-  let pageCount = Math.ceil(allfilterPokemon.length / 9)
+  let pageCount = Math.ceil(allfilterPokemon?.length / 9)
 
   const handlePageChange = (page: number) => {
     setIsLoading(true)
-    const pokemons = allfilterPokemon.slice((page * 9) - 9, page * 9);
+    const pokemons = allfilterPokemon?.slice((page * 9) - 9, page * 9);
     setCurrentPage(page)
     setActualFilterPokemon(pokemons)
     router.push("#navbar")
     setIsLoading(false)
   }
 
-
   useEffect(() => {
     async function getData() {
       try {
         setIsLoading(true)
-        const res = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=0&limit=100000`, {
-          method: 'GET',
-          headers: {
-            accept: 'application/json',
-          },
-        })
-        if (!res.ok) {
-          throw new Error(`Error! status: ${res.status}`);
-        }
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=0&limit=100000`)
         const data = await res.json()
         const pokemons = data?.results
-        const filteredPokemons = pokemons.filter((pokemon: { name: string, url: string }) => pokemon.name.includes(input.toLowerCase()))
-        const promises = filteredPokemons.map(async (pokemon: any) => {
-          const res = await fetch(pokemon.url, {
-            method: 'GET',
-            headers: {
-              accept: 'application/json',
-            },
-          })
+        const filteredPokemons = pokemons?.filter((pokemon: { name: string, url: string }) => pokemon.name.includes(input.toLowerCase()))
+        const promises = filteredPokemons?.map(async (pokemon: any) => {
+          const res = await fetch(pokemon.url)
           const data = await res.json()
           return data
-        }).catch((e: { message: string }) => console.log(e.message));
+        })
         const results = await Promise.all(promises)
         setAllFilterPokemon(results)
         setActualFilterPokemon(results.slice(0, 9))
         setIsLoading(false)
       } catch {
-        console.log('Erro requisição');
+        router.push('/')
       }
     }
     getData()
-  }, [input]);
+  }, [input, router]);
 
   if (isLoading) {
     return (
@@ -83,17 +66,21 @@ const Search = () => {
 
   return (
     <div>
-      {
-        (actualFilterPokemon.length) ? actualFilterPokemon?.map((pokemon: PokemonDetails) => (
-          <div key={pokemon.id}>
-            <div className="bg-slate-100 dark:bg-slate-800 dark:text-slate-50 px-6 py-8 ring-1 ring-slate-900/5 shadow-xl p-10 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-16">
+      <div className="bg-slate-100 dark:bg-slate-800 dark:text-slate-50 px-6 py-8 ring-1 ring-slate-900/5 shadow-xl p-10 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-16">
+        {
+          (actualFilterPokemon?.length && actualFilterPokemon) ? actualFilterPokemon?.map((pokemon: PokemonDetails) => (
+            <div key={pokemon.id}>
               <Link href={pokemon.name} >
                 <Pokemon image={pokemon.sprites.front_default} text={pokemon.name} types={pokemon.types} />
               </Link>
             </div>
-          </div>
-        )) : (
-          <section className="flex py-44 justify-center items-center bg-slate-100 dark:bg-slate-800 dark:text-gray-100">
+          )) : null}
+      </div>
+
+
+      {
+        (actualFilterPokemon?.length === 0) ?
+          (<section className="flex py-44 justify-center items-center bg-slate-100 dark:bg-slate-800 dark:text-gray-100">
             <div className="container flex flex-col items-center justify-center px-5 mx-auto ">
               <div className="max-w-md text-center">
                 <h2 className="mb-8 font-extrabold text-9xl dark:text-gray-600">
@@ -105,7 +92,7 @@ const Search = () => {
               </div>
             </div>
           </section>
-        )
+          ) : null
       }
       <div className="w-100 mx-auto">
         <Pagination
