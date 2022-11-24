@@ -1,11 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
+import { Waveform } from '@uiball/loaders';
 import type { NextPage } from "next";
 import Link from "next/link";
 import { useEffect, useState } from 'react';
 import Pagination from 'react-responsive-pagination';
 import Grid from "../components/Grid";
 import Pokemon from "../components/Pokemon";
-
 import { PokemonDetails } from "../types/pokemonDetails";
 
 const totalOfPokemons = 1154
@@ -16,9 +16,11 @@ const Index: NextPage = () => {
   const [pokemon, setPokemon] = useState<PokemonDetails[]>([])
   const [off, setOff] = useState(0)
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     async function getData() {
+      setIsLoading(true)
       const res = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=${off}&limit=9`)
       const data = await res.json()
       const promises = data?.results?.map(async (pokemon: any) => {
@@ -28,6 +30,9 @@ const Index: NextPage = () => {
       })
       const results = await Promise.all(promises)
       setPokemon(results)
+      setTimeout(() => {
+        setIsLoading(false)
+      }, 500)
     }
     getData()
   }, [off])
@@ -36,6 +41,23 @@ const Index: NextPage = () => {
     setOff((page - 1) * 9)
     setCurrentPage(page)
   }
+
+  if (isLoading) {
+    return (
+      <div style={{
+        width: "100%",
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+        className="bg-slate-100 dark:bg-slate-800"
+      >
+        <Waveform size={60} color="#3d3e7c" />
+      </div>
+    )
+  }
+
   return (
     <div className="bg-slate-100 dark:bg-slate-800 dark:text-slate-50 px-6 py-8 ring-1 ring-slate-900/5 shadow-xl">
       <Grid>
