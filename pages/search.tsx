@@ -8,7 +8,7 @@ import { InputContext } from '../context/InputPokemon';
 import { PokemonDetails } from '../types/pokemonDetails';
 
 const Search = () => {
-  const [allfilterPokemon, setAllFilterPokemon] = useState<PokemonDetails[]>([])
+  const [allfilterPokemon, setAllFilterPokemon] = useState<PokemonDetails[]>([]);
   const [actualFilterPokemon, setActualFilterPokemon] = useState<PokemonDetails[]>([])
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false)
@@ -27,22 +27,40 @@ const Search = () => {
     setIsLoading(false)
   }
 
+
   useEffect(() => {
     async function getData() {
-      setIsLoading(true)
-      const res = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=0&limit=100000`)
-      const data = await res.json()
-      const pokemons = data?.results
-      const filteredPokemons = pokemons.filter((pokemon: { name: string, url: string }) => pokemon.name.includes(input.toLowerCase()))
-      const promises = filteredPokemons.map(async (pokemon: any) => {
-        const res = await fetch(pokemon.url)
+      try {
+        setIsLoading(true)
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=0&limit=100000`, {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+          },
+        })
+        if (!res.ok) {
+          throw new Error(`Error! status: ${res.status}`);
+        }
         const data = await res.json()
-        return data
-      })
-      const results = await Promise.all(promises)
-      setAllFilterPokemon(results)
-      setActualFilterPokemon(results.slice(0, 9))
-      setIsLoading(false)
+        const pokemons = data?.results
+        const filteredPokemons = pokemons.filter((pokemon: { name: string, url: string }) => pokemon.name.includes(input.toLowerCase()))
+        const promises = filteredPokemons.map(async (pokemon: any) => {
+          const res = await fetch(pokemon.url, {
+            method: 'GET',
+            headers: {
+              accept: 'application/json',
+            },
+          })
+          const data = await res.json()
+          return data
+        }).catch((e: { message: string }) => console.log(e.message));
+        const results = await Promise.all(promises)
+        setAllFilterPokemon(results)
+        setActualFilterPokemon(results.slice(0, 9))
+        setIsLoading(false)
+      } catch {
+        console.log('Erro requisição');
+      }
     }
     getData()
   }, [input]);
