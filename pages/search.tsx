@@ -6,6 +6,7 @@ import Pagination from 'react-responsive-pagination';
 import Pokemon from '../components/Pokemon';
 import { InputContext } from '../context/InputPokemon';
 import { PokemonDetails } from '../types/pokemonDetails';
+
 const Search = () => {
   const [allfilterPokemon, setAllFilterPokemon] = useState<PokemonDetails[]>([]);
   const [actualFilterPokemon, setActualFilterPokemon] = useState<PokemonDetails[]>([])
@@ -77,7 +78,6 @@ const Search = () => {
           )) : null}
       </div>
 
-
       {
         (actualFilterPokemon?.length === 0) ?
           (<section className="flex py-44 justify-center items-center bg-slate-100 dark:bg-slate-800 dark:text-gray-100">
@@ -94,6 +94,7 @@ const Search = () => {
           </section>
           ) : null
       }
+
       <div className="w-100 mx-auto">
         <Pagination
           current={currentPage}
