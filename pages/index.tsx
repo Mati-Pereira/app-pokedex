@@ -19,6 +19,7 @@ const Index: NextPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+
   useEffect(() => {
     async function getData() {
       setIsLoading(true)
