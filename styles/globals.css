@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  @apply bg-slate-100 dark:bg-slate-800;
+}
+
 .pagination {
   justify-content: center;
   display: flex;

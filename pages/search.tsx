@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import Pagination from 'react-responsive-pagination';
-import Grid from '../components/Grid';
 import Pokemon from '../components/Pokemon';
 import { InputContext } from '../context/InputPokemon';
 import { PokemonDetails } from '../types/pokemonDetails';
@@ -65,17 +64,19 @@ const Search = () => {
   }
 
   return (
-    <div className="bg-slate-100 dark:bg-slate-800 dark:text-slate-50 px-6 py-8 ring-1 ring-slate-900/5 shadow-xl">
+    <div>
       {
         (actualFilterPokemon.length) ? actualFilterPokemon?.map((pokemon: PokemonDetails) => (
-          <Grid key={pokemon.id}>
-            <Link href={pokemon.name} >
-              <Pokemon image={pokemon.sprites.front_default} text={pokemon.name} types={pokemon.types} />
-            </Link>
-          </Grid>
+          <div key={pokemon.id}>
+            <div className="bg-slate-100 dark:bg-slate-800 dark:text-slate-50 px-6 py-8 ring-1 ring-slate-900/5 shadow-xl p-10 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-16">
+              <Link href={pokemon.name} >
+                <Pokemon image={pokemon.sprites.front_default} text={pokemon.name} types={pokemon.types} />
+              </Link>
+            </div>
+          </div>
         )) : (
-          <section className="flex flex-col h-[80vh] justify-center items-center  bg-slate-100 dark:bg-slate-800 dark:text-gray-100">
-            <div className="container flex flex-col items-center justify-center px-5 mx-auto my-8">
+          <section className="flex py-44 justify-center items-center bg-slate-100 dark:bg-slate-800 dark:text-gray-100">
+            <div className="container flex flex-col items-center justify-center px-5 mx-auto ">
               <div className="max-w-md text-center">
                 <h2 className="mb-8 font-extrabold text-9xl dark:text-gray-600">
                   <span className="sr-only">Error</span>404
