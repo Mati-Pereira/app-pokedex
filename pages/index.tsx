@@ -2,6 +2,7 @@
 import { Waveform } from '@uiball/loaders';
 import type { NextPage } from "next";
 import Link from "next/link";
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import Pagination from 'react-responsive-pagination';
 import Grid from "../components/Grid";
@@ -17,7 +18,7 @@ const Index: NextPage = () => {
   const [off, setOff] = useState(0)
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false)
-
+  const router = useRouter()
   useEffect(() => {
     async function getData() {
       setIsLoading(true)
@@ -40,6 +41,7 @@ const Index: NextPage = () => {
   const handlePageChange = (page: number) => {
     setOff((page - 1) * 9)
     setCurrentPage(page)
+    router.push("#navbar")
   }
 
   if (isLoading) {
