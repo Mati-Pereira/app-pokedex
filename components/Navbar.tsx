@@ -1,17 +1,20 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
+import { InputContext } from '../context/InputPokemon';
 import Toggle from './Toggle';
-
 function Navbar() {
-  const [input, setInput] = useState('')
   const router = useRouter()
+  const { updateInput } = useContext(InputContext)
+
+  const [input, setInput] = useState('')
+
   const handleClick = () => {
-    setInput("")
-    router.push("/search")
-    localStorage.setItem('input', JSON.stringify(input))
+    updateInput(input)
+    router.push('/search')
   }
+
   return (
     <nav className="flex bg-white border-gray-200 p-4 md:px-16 transition-colors dark:bg-gray-900" id="navbar">
       <div className="container flex flex-col md:flex-row gap-5 flex-wrap items-center justify-between mx-auto">

@@ -2,6 +2,7 @@ import { Waveform } from '@uiball/loaders';
 import type { AppProps } from 'next/app';
 import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
+import { ContextInput } from '../context/InputPokemon';
 import '../styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -39,9 +40,9 @@ export default function App({ Component, pageProps }: AppProps) {
   }
 
   return (
-    <>
+    <ContextInput>
       <Navbar />
       <Component {...pageProps} />
-    </>
+    </ContextInput>
   )
 }
