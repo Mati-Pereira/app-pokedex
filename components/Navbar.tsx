@@ -1,14 +1,8 @@
-import { ChangeEventHandler } from 'react';
-import Toggle from "./Toggle";
+import Toggle from './Toggle';
 
-interface Props {
-  onChange: ChangeEventHandler<HTMLInputElement>
-}
-
-/* eslint-disable @next/next/no-img-element */
-function Navbar({ onChange }: Props) {
+function Navbar() {
   return (
-    <nav className="bg-white border-gray-200 px-4 md:px-16 py-2.5 dark:bg-gray-900">
+    <nav className="flex bg-white border-gray-200 px-4 md:px-16 py-2.5 dark:bg-gray-900">
       <div className="container flex flex-col md:flex-row gap-5 flex-wrap items-center justify-between mx-auto">
         <a href="https://flowbite.com/" className="flex items-center">
           <span className="self-center w-24"><img src="pokedex-logo.png" alt="pokedex-logo" /></span>
@@ -21,7 +15,7 @@ function Navbar({ onChange }: Props) {
             <input type="text" id="search-navbar" className="block max-w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search..." />
           </div>
         </div>
-        <Toggle onChange={onChange} />
+        <Toggle />
       </div>
     </nav>
   );
