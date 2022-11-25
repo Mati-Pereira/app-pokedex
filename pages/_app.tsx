@@ -1,3 +1,7 @@
+import {
+  QueryClient,
+  QueryClientProvider
+} from '@tanstack/react-query';
 import { Waveform } from '@uiball/loaders';
 import type { AppProps } from 'next/app';
 import { useEffect, useState } from 'react';
@@ -6,6 +10,7 @@ import { ContextInput } from '../context/InputPokemon';
 import '../styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
+  const queryClient = new QueryClient()
   const [isLoading, setIsLoading] = useState(false)
   useEffect(() => {
     setIsLoading(true)
@@ -40,9 +45,11 @@ export default function App({ Component, pageProps }: AppProps) {
   }
 
   return (
-    <ContextInput>
-      <Navbar />
-      <Component {...pageProps} />
-    </ContextInput>
+    <QueryClientProvider client={queryClient}>
+      <ContextInput>
+        <Navbar />
+        <Component {...pageProps} />
+      </ContextInput>
+    </QueryClientProvider>
   )
 }

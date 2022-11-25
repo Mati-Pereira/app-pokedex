@@ -1,3 +1,4 @@
+import { Waveform } from '@uiball/loaders';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useContext, useState } from 'react';
@@ -5,14 +6,31 @@ import { AiOutlineSearch } from 'react-icons/ai';
 import { InputContext } from '../context/InputPokemon';
 import Toggle from './Toggle';
 function Navbar() {
-  const router = useRouter()
   const { updateInput } = useContext(InputContext)
-
   const [input, setInput] = useState('')
-
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
   const handleClick = () => {
+    setIsLoading(true)
     updateInput(input)
     router.push('/search')
+    setIsLoading(false)
+  }
+
+  if (isLoading) {
+    return (
+      <div style={{
+        width: "100%",
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+        className="bg-slate-100 dark:bg-slate-800"
+      >
+        <Waveform size={60} color="#3d3e7c" />
+      </div>
+    )
   }
 
   return (
