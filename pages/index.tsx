@@ -16,7 +16,7 @@ const Index: NextPage = () => {
   const [off, setOff] = useState(0)
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setLoading] = useState(false)
-  const [pokemons, setPokemons] = useState([])
+  const [pokemons, setPokemons] = useState<PokemonDetails[]>([])
 
   useEffect(() => {
     async function getPokemon() {
