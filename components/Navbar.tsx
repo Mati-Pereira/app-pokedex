@@ -1,20 +1,16 @@
+/* eslint-disable @next/next/no-img-element */
 import { Waveform } from '@uiball/loaders';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
+import WindowedSelect, { createFilter } from "react-windowed-select";
 import { InputContext } from '../context/InputPokemon';
 import Toggle from './Toggle';
 
-interface PokemonProps {
-  value: string
-  label: string
-}
-
 function Navbar() {
   const { updateInput } = useContext(InputContext)
-  const [allPokemons, setAllPokemons] = useState<PokemonProps[]>([]);
-  console.log("🚀 ~ file: Navbar.tsx ~ line 12 ~ Navbar ~ allPokemons", allPokemons)
+  const [pokemon, setPokemon] = useState([]);
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -22,22 +18,25 @@ function Navbar() {
   const handleClick = () => {
     setIsLoading(true)
     updateInput(input)
-    router.push('/search')
+    router.push(`/${input}`)
     setIsLoading(false)
   }
 
+  const handleSelected = (selectedPokemon: { label: string, value: string }) => {
+    setInput(selectedPokemon.value)
+  }
+
   useEffect(() => {
-    async function getPokemon() {
-      const res = await fetch('https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0')
-      const data = await res.json()
-      const results = data?.results
-      setAllPokemons(prevEmployees => [
-        ...prevEmployees,
-        { label: results?.name, value: results?.name },
-      ])
-    }
-    getPokemon()
-  }, [])
+    fetch("https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0")
+      .then((data) => data.json())
+      .then((data) => setPokemon(data?.results));
+  }, []);
+
+  const names = pokemon?.map((pokemon: { name: string }) => {
+    return { label: pokemon.name, value: pokemon.name }
+  })
+
+  const customFilter = createFilter({ ignoreAccents: false });
 
   if (isLoading) {
     return (
@@ -62,8 +61,8 @@ function Navbar() {
           <span className="self-center w-24"><img src="pokedex-logo.png" alt="pokedex-logo" /></span>
         </Link>
         <div className="flex items-stretch">
-          <Select placeholder="Search..." />
-          <button type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm p-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 rounded-r-full" onClick={handleClick}>
+          <WindowedSelect options={names} windowThreshold={50} filterOption={customFilter} styles={{ container: (base) => ({ ...base, width: '50vw' }) }} onChange={handleSelected} onKeyDown={handleClick} />
+          <button title='button' type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm p-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 rounded-r-full" onClick={handleClick}>
             <AiOutlineSearch />
           </button>
         </div>

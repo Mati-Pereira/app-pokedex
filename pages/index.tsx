@@ -1,9 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
-import { useQuery } from '@tanstack/react-query';
 import { Waveform } from '@uiball/loaders';
 import type { NextPage } from "next";
 import Link from "next/link";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Pagination from 'react-responsive-pagination';
 import Grid from "../components/Grid";
 import Pokemon from "../components/Pokemon";
@@ -16,20 +15,25 @@ const pageCount = Math.ceil(totalOfPokemons / pokemonsPerPage)
 const Index: NextPage = () => {
   const [off, setOff] = useState(0)
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setLoading] = useState(false)
+  const [pokemons, setPokemons] = useState([])
 
-  const { data, isError, isLoading, } = useQuery(["repoData"], async () => {
-    const res = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=${off}&limit=9`)
-    const data = await res.json()
-    const promises = data?.results?.map(async (pokemon: any) => {
-      const res = await fetch(pokemon.url)
+  useEffect(() => {
+    async function getPokemon() {
+      setLoading(true)
+      const res = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=${off}&limit=9`)
       const data = await res.json()
-      return data
-    })
-    const results = await Promise.all(promises)
-    return results
-  })
-
-  const events = data ?? []
+      const promises = data?.results?.map(async (pokemon: any) => {
+        const res = await fetch(pokemon?.url)
+        const data = await res.json()
+        return data
+      })
+      const results = await Promise.all(promises)
+      setPokemons(results)
+      setLoading(false)
+    }
+    getPokemon()
+  }, [off])
 
   const handlePageChange = (page: number) => {
     setOff((page - 1) * 9)
@@ -51,14 +55,11 @@ const Index: NextPage = () => {
       </div>
     )
   }
-  if (isError) {
-    return <h1>Opa, algo deu errado</h1>
-  }
   return (
     <div className="bg-slate-100 dark:bg-slate-800 dark:text-slate-50 px-6 py-8 ring-1 ring-slate-900/5 shadow-xl">
       <Grid>
         {
-          events.map((pokemon: PokemonDetails) => (
+          pokemons?.map((pokemon: PokemonDetails) => (
             <Link href={pokemon.name} key={pokemon.id}>
               <Pokemon image={pokemon.sprites.front_default} text={pokemon.name} types={pokemon.types} />
             </Link>
@@ -77,5 +78,3 @@ const Index: NextPage = () => {
 }
 
 export default Index
-
-// criar lista em vez de refetch
