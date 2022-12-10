@@ -25,7 +25,7 @@ function Navbar() {
     }, 1000)
   }
 
-  const handleSelected = (selectedPokemon: { label: string, value: string }) => {
+  const handleSelected = (selectedPokemon: any) => {
     setInput(selectedPokemon.value)
   }
 
