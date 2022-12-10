@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { Waveform } from '@uiball/loaders';
+import { Ring } from '@uiball/loaders';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
@@ -16,9 +16,13 @@ function Navbar() {
   const router = useRouter()
 
   const handleClick = () => {
+    setIsLoading(true)
     updateInput(input)
     router.push(`/${input}`)
     updateInput('')
+    setTimeout(() => {
+      setIsLoading(false)
+    }, 2000)
   }
 
   const handleSelected = (selectedPokemon: { label: string, value: string }) => {
@@ -46,7 +50,7 @@ function Navbar() {
         <div className="flex items-stretch">
           <WindowedSelect options={names} windowThreshold={50} filterOption={customFilter} styles={{ container: (base) => ({ ...base, width: '50vw' }) }} onChange={handleSelected} onKeyDown={handleClick} />
           <button title='button' type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm p-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 rounded-r-full" onClick={handleClick}>
-            {isLoading ? <Waveform size={10} color="#3d3e7c" /> : <AiOutlineSearch />}
+            {isLoading ? <Ring size={14} color="#eee" /> : <AiOutlineSearch />}
           </button>
         </div>
         <Toggle />
