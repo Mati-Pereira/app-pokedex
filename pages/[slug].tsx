@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PokemonDetails } from "../types/pokemonDetails";
 
 interface DetailsProps {
-  data: PokemonDetails[];
+  data: PokemonDetails;
 }
 
 function Details({ data }: DetailsProps) {
