@@ -16,10 +16,9 @@ function Navbar() {
   const router = useRouter()
 
   const handleClick = () => {
-    setIsLoading(true)
     updateInput(input)
     router.push(`/${input}`)
-    setIsLoading(false)
+    updateInput('')
   }
 
   const handleSelected = (selectedPokemon: { label: string, value: string }) => {
@@ -36,23 +35,7 @@ function Navbar() {
     return { label: pokemon.name, value: pokemon.name }
   })
 
-  const customFilter = createFilter({ ignoreAccents: false });
-
-  if (isLoading) {
-    return (
-      <div style={{
-        width: "100%",
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-        className="bg-slate-100 dark:bg-slate-800"
-      >
-        <Waveform size={60} color="#3d3e7c" />
-      </div>
-    )
-  }
+  const customFilter = createFilter({ ignoreAccents: false, trim: true });
 
   return (
     <nav className="flex bg-white border-gray-200 p-4 md:px-16 transition-colors dark:bg-gray-900" id="navbar">
@@ -63,7 +46,7 @@ function Navbar() {
         <div className="flex items-stretch">
           <WindowedSelect options={names} windowThreshold={50} filterOption={customFilter} styles={{ container: (base) => ({ ...base, width: '50vw' }) }} onChange={handleSelected} onKeyDown={handleClick} />
           <button title='button' type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm p-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 rounded-r-full" onClick={handleClick}>
-            <AiOutlineSearch />
+            {isLoading ? <Waveform size={10} color="#3d3e7c" /> : <AiOutlineSearch />}
           </button>
         </div>
         <Toggle />
