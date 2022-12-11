@@ -48,7 +48,7 @@ function Navbar() {
           <span className="self-center w-24"><img src="pokedex-logo.png" alt="pokedex-logo" /></span>
         </Link>
         <div className="flex items-stretch">
-          <WindowedSelect options={names} windowThreshold={50} filterOption={customFilter} onChange={handleSelected} onKeyDown={handleClick} className='w-[70vw] md:w-[50vw]'/>
+          <WindowedSelect options={names} windowThreshold={50} filterOption={customFilter} onChange={handleSelected} onKeyDown={handleClick} className='w-[70vw] md:w-[50vw]' />
           <button title='button' type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm p-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 rounded-r-full" onClick={handleClick}>
             {isLoading ? <Ring size={14} color="#eee" /> : <AiOutlineSearch />}
           </button>

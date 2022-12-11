@@ -42,15 +42,7 @@ const Index: NextPage = () => {
 
   if (isLoading) {
     return (
-      <div style={{
-        width: "100%",
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-        className="bg-slate-100 dark:bg-slate-800"
-      >
+      <div className="bg-slate-100 dark:bg-slate-800 w-full h-screen flex justify-center items-center"      >
         <Waveform size={60} color="#3d3e7c" />
       </div>
     )

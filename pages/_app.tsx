@@ -8,7 +8,6 @@ import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { ContextInput } from '../context/InputPokemon';
 import '../styles/globals.css';
-
 export default function App({ Component, pageProps }: AppProps) {
   const queryClient = new QueryClient()
   const [isLoading, setIsLoading] = useState(false)
@@ -27,23 +26,13 @@ export default function App({ Component, pageProps }: AppProps) {
       setIsLoading(false);
     }, 500)
   }, []);
-
   if (isLoading) {
     return (
-      <div style={{
-        width: "100%",
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-        className="bg-slate-100 dark:bg-slate-800"
-      >
+      <div className="bg-slate-100 dark:bg-slate-800 w-full h-screen flex justify-center items-center">
         <Waveform size={60} color="#3d3e7c" />
       </div>
     )
   }
-
   return (
     <QueryClientProvider client={queryClient}>
       <ContextInput>

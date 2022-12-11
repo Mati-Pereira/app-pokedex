@@ -1,11 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 import { GetStaticPaths, GetStaticProps } from "next";
 import { PokemonDetails } from "../types/pokemonDetails";
-
 interface DetailsProps {
   data: PokemonDetails;
 }
-
 function Details({ data }: DetailsProps) {
   return (
     <>
@@ -55,9 +53,7 @@ function Details({ data }: DetailsProps) {
     </>
   );
 }
-
 export default Details
-
 export const getStaticProps: GetStaticProps = async context => {
   const slug = context.params?.slug
   const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${slug}`)
@@ -68,8 +64,6 @@ export const getStaticProps: GetStaticProps = async context => {
     },
   };
 };
-
-
 export const getStaticPaths: GetStaticPaths = async (ctx) => {
   const res = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=0&limit=100000`)
   const data = await res.json()

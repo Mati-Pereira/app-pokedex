@@ -1,39 +1,32 @@
 import { useEffect, useState } from 'react';
-
-const isDark = () => //Function that will return boolean if any of the condition is satisfied
-  (localStorage && localStorage.theme === 'dark') || //Condition 1 - has local storage and theme = dark in local storage is found
+const isDark = () =>
+  (localStorage && localStorage.theme === 'dark') ||
   (!('theme' in localStorage) &&
-    window.matchMedia('(prefers-color-scheme: dark)').matches); //Condition 2 - No theme key in local storage but media color scheme is dark
-
-const getTheme = (isDark: boolean) => (isDark ? 'dark' : 'light'); //Function to return 'dark' or 'light' string
-
+    window.matchMedia('(prefers-color-scheme: dark)').matches);
+const getTheme = (isDark: boolean) => (isDark ? 'dark' : 'light');
 const Toggle = () => {
-  const [darkMode, setDarkMode] = useState(false); //State for holding theme status
-
-  const toggleMode = () => { //onClick handler for changing theme on button press
-    localStorage.theme = getTheme(!darkMode); //setting up local storage theme value
-    if (localStorage.theme === 'dark') { // If theme is 'dark'
-      document.documentElement.classList.remove('light'); // remove 'light' from html class
-      document.documentElement.classList.add('dark'); // add 'dark' to html class
-    } else { // if not 'dark'
-      document.documentElement.classList.remove('dark'); // remove 'dark' from html class
-      document.documentElement.classList.add('light'); //add 'light' to html class
+  const [darkMode, setDarkMode] = useState(false);
+  const toggleMode = () => {
+    localStorage.theme = getTheme(!darkMode);
+    if (localStorage.theme === 'dark') {
+      document.documentElement.classList.remove('light');
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
     }
-    setDarkMode(!darkMode); //set dark mode state to opposite of initial value
+    setDarkMode(!darkMode);
   };
-
   useEffect(() => {
-    setDarkMode(isDark()); //before page mount set the value of dark mode by observing theme in local storage
+    setDarkMode(isDark());
   }, []);
-
   const darkModeActive =
-    process.browser && document.documentElement.classList.contains('dark'); // returns true if its a client and 'dark' is present in html
-  // process.browser is deprecated can be written as typeof window === 'undefined'
+    process.browser && document.documentElement.classList.contains('dark');
   return (
     <>
       <button className='w-10 h-10 focus:outline-none' onClick={toggleMode}>
         <span className='sr-only'>Color mode switch button</span>
-        {darkModeActive ? ( //switch mode icon according to html class 'dark' or 'light'
+        {darkModeActive ? (
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-10 w-10 text-indigo-200"
