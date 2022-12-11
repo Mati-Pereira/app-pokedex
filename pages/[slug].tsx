@@ -34,7 +34,7 @@ function Details({ data }: DetailsProps) {
         <div className="flex flex-col justify-center items-center w-full md:w-1/2 px-12 gap-6">
           <div className="py-10 text-center">
             <h2 className="text-slate-800 text-2xl mb-5 dark:text-white font-semibold">Habilities</h2>
-            <div className="flex gap-10">
+            <div className="flex gap-3">
               {data.abilities.map((ability, i) => (<span key={i} className="my-5 px-5 py-3 text-slate-800 dark:text-white bg-gray-200 overflow-hidden shadow-lg dark:bg-sky-900 rounded-full">{ability.ability.name}</span>))}
             </div>
           </div>
