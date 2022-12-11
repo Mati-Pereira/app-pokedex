@@ -40,7 +40,7 @@ function Details({ data }: DetailsProps) {
               {data.abilities.map((ability, i) => (<span key={i} className="my-5 px-5 py-3 text-slate-800 dark:text-white bg-gray-200 overflow-hidden shadow-lg dark:bg-sky-900 rounded-full">{ability.ability.name}</span>))}
             </div>
           </div>
-          <table className="flex flex-col w-fit justify-around">
+          <table className="flex flex-col w-fit justify-around pb-10">
             <tr className="bg-slate-100 dark:bg-slate-800 dark:border-slate-100 border-slate-800 flex flex-col justify-evenly ">
               {data.stats.map((stat, i) => (
                 <div key={i}>
