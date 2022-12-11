@@ -9,10 +9,10 @@ interface DetailsProps {
 function Details({ data }: DetailsProps) {
   return (
     <>
-      <h1 className="text-4xl text-slate-800 mb-10 dark:text-white">{data.name.toUpperCase()}</h1>
-      <div className="flex flex-col md:flex-row h-full md:h-[calc(100vh-152px)]">
+      <h1 className="text-4xl text-slate-800 py-10 font-bold dark:text-white w-screen flex justify-center">{data.name.toUpperCase()}</h1>
+      <div className="flex flex-col md:flex-row">
         <div className="bg-slate-100 dark:bg-slate-800 dark:text-gray-100 w-full md:w-1/2 px-12 flex items-center justify-center flex-col">
-          <div className="carousel w-full bg-slate-100 dark:bg-slate-800 py-10">
+          <div className="carousel w-full bg-slate-100 dark:bg-slate-800">
             <div id="item1" className="carousel-item w-full">
               <img src={data.sprites.front_default} className="w-full" alt="pokemon" />
             </div>
@@ -34,14 +34,18 @@ function Details({ data }: DetailsProps) {
           </div>
         </div>
         <div className="flex flex-col justify-center items-center w-full md:w-1/2 px-12 gap-6">
-          <h2 className="text-slate-800 text-2xl mb-5 dark:text-white">Habilidades</h2>
-          {data.abilities.map((ability, i) => (<div key={i} className="flex gap-6"><span className="text-slate-800 dark:text-white">{ability.ability.name}</span></div>))}
+          <div className="py-10 text-center">
+            <h2 className="text-slate-800 text-2xl mb-5 dark:text-white font-semibold">Habilities</h2>
+            <div className="flex gap-10">
+              {data.abilities.map((ability, i) => (<span key={i} className="my-5 px-5 py-3 text-slate-800 dark:text-white bg-gray-200 overflow-hidden shadow-lg dark:bg-sky-900 rounded-full">{ability.ability.name}</span>))}
+            </div>
+          </div>
           <table className="flex flex-col w-fit justify-around">
             <tr className="bg-slate-100 dark:bg-slate-800 dark:border-slate-100 border-slate-800 flex flex-col justify-evenly ">
               {data.stats.map((stat, i) => (
                 <div key={i}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-800 mb-10 dark:text-white w-48 border-b border-slate-600">{stat.stat.name}</td>
-                  <td className="text-sm text-slate-800 mb-10 dark:text-white font-light px-6 py-4 whitespace-nowrap w-48 border-b text-center border-slate-600">{stat.base_stat}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-800 mb-10 dark:text-white w-36 md:w-40 lg:w-48 border-b border-slate-600">{stat.stat.name}</td>
+                  <td className="text-sm text-slate-800 mb-10 dark:text-white font-light px-6 py-4 whitespace-nowrap w-32 md:w-36 lg:w-48 border-b text-center border-slate-600">{stat.base_stat}</td>
                 </div>
               ))}
             </tr>
