@@ -16,7 +16,6 @@ const Types = () => {
     const [allPokemons, setAllPokemons] = useState<PokemonDetails[]>([])
     const [pagePokemons, setPagePokemons] = useState<PokemonDetails[]>([])
     const [currentPage, setCurrentPage] = useState(1)
-    console.log("🚀 ~ file: types.tsx:17 ~ Types ~ currentPage", currentPage)
     const pageCount = Math.ceil(allPokemons.length / 9)
     const router = useRouter()
     const handlePageChange = (page: any) => {
@@ -27,9 +26,6 @@ const Types = () => {
         setPagePokemons(allPokemons.slice(initialIndex, finalIndex))
         setLoading(false)
     }
-
-    
-
     useEffect(() => {
         async function getPokemon() {
             setLoading(true)
