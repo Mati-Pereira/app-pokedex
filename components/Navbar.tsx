@@ -29,6 +29,7 @@ function Navbar() {
 
   const handleType = () => {
     setIsLoadingType(true)
+    document.cookie = inputType
     updateInput(inputType)
     router.push(`/types`)
     setTimeout(() => {
