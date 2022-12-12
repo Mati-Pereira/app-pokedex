@@ -7,6 +7,7 @@ import Pokemon from '../components/Pokemon';
 import { InputContext } from '../context/InputPokemon';
 import { PokemonDetails } from '../types/pokemonDetails';
 import Pagination from 'react-responsive-pagination';
+import { useRouter } from 'next/router';
 
 const Types = () => {
     const { input } = useContext(InputContext)
@@ -16,6 +17,7 @@ const Types = () => {
     const [currentPage, setCurrentPage] = useState(1)
     console.log("🚀 ~ file: types.tsx:17 ~ Types ~ currentPage", currentPage)
     const pageCount = Math.ceil(allPokemons.length / 9)
+    const router = useRouter()
     const handlePageChange = (page: any) => {
         setLoading(true)
         setCurrentPage(page)
@@ -33,14 +35,14 @@ const Types = () => {
                 const res = await fetch(pokemon?.pokemon?.url)
                 const data = await res.json()
                 return data
-            }) || []
+            }) || router.push('/')
             const results = await Promise.all(promises)
             setAllPokemons(results)
             setPagePokemons(results.slice(0, 9))
             setLoading(false)
         }
         getPokemon().catch(e => console.error(e))
-    }, [input])
+    }, [input, router])
     if (isLoading) {
         return (
             <div className="bg-slate-100 dark:bg-slate-800 w-full h-screen flex justify-center items-center"      >
