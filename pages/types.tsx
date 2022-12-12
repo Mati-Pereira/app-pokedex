@@ -1,6 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
 import { Waveform } from '@uiball/loaders';
-import { NextPage } from 'next';
 import Link from 'next/link';
 import { useContext, useEffect, useState } from 'react';
 import Grid from '../components/Grid';
@@ -40,7 +39,7 @@ const Types = () => {
             setPagePokemons(results.slice(0, 9))
             setLoading(false)
         }
-        getPokemon()
+        getPokemon().catch(e => console.error(e))
     }, [input])
     if (isLoading) {
         return (
