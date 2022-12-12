@@ -1,15 +1,12 @@
-import {
-  QueryClient,
-  QueryClientProvider
-} from '@tanstack/react-query';
+
 import { Waveform } from '@uiball/loaders';
 import type { AppProps } from 'next/app';
+import { Router } from 'next/router';
 import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { ContextInput } from '../context/InputPokemon';
 import '../styles/globals.css';
 export default function App({ Component, pageProps }: AppProps) {
-  const queryClient = new QueryClient()
   const [isLoading, setIsLoading] = useState(false)
   useEffect(() => {
     setIsLoading(true)
@@ -26,19 +23,31 @@ export default function App({ Component, pageProps }: AppProps) {
       setIsLoading(false);
     }, 500)
   }, []);
-  if (isLoading) {
-    return (
-      <div className="bg-slate-100 dark:bg-slate-800 w-full h-screen flex justify-center items-center">
-        <Waveform size={60} color="#3d3e7c" />
-      </div>
-    )
-  }
+  useEffect(() => {
+    const start = () => {
+      console.log("start");
+      setIsLoading(true);
+    };
+    const end = () => {
+      console.log("finished");
+      setIsLoading(false);
+    };
+    Router.events.on("routeChangeStart", start);
+    Router.events.on("routeChangeComplete", end);
+    Router.events.on("routeChangeError", end);
+    return () => {
+      Router.events.off("routeChangeStart", start);
+      Router.events.off("routeChangeComplete", end);
+      Router.events.off("routeChangeError", end);
+    };
+  }, []);
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <ContextInput>
-        <Navbar />
-        <Component {...pageProps} />
-      </ContextInput>
-    </QueryClientProvider>
+    <ContextInput>
+      <Navbar />
+      {isLoading ? (<div className="bg-slate-100 dark:bg-slate-800 w-full h-screen flex justify-center items-center">
+        <Waveform size={60} color="#3d3e7c" />
+      </div>) : <Component {...pageProps} />}
+    </ContextInput>
   )
 }

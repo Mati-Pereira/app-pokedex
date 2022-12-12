@@ -6,13 +6,14 @@ import Pokemon from '../components/Pokemon';
 import { PokemonDetails } from '../types/pokemonDetails';
 import Pagination from 'react-responsive-pagination';
 import { GetServerSideProps } from 'next';
+import { Waveform } from '@uiball/loaders';
 
 const Types = ({ results }: { results: PokemonDetails[] }) => {
-    console.log("🚀 ~ file: types.tsx:11 ~ Types ~ results", results)
     const [pagePokemons, setPagePokemons] = useState<PokemonDetails[]>(results.slice(0, 9))
     const [currentPage, setCurrentPage] = useState(1)
-    console.log("🚀 ~ file: types.tsx:17 ~ Types ~ currentPage", currentPage)
+    const [isLoading, setIsLoading] = useState(false)
     const pageCount = Math.ceil(results.length / 9)
+
     const handlePageChange = (page: any) => {
         setCurrentPage(page)
         const initialIndex = (page - 1) * 9
@@ -20,16 +21,10 @@ const Types = ({ results }: { results: PokemonDetails[] }) => {
         setPagePokemons(results.slice(initialIndex, finalIndex))
     }
 
-    if (!results.length) {
+    if (isLoading) {
         return (
-            <div className='bg-gray-200 dark:bg-slate-800 dark:text-white text-slate-800'>
-                <div className="flex flex-col min-h-[calc(100vh-73px)] justify-center items-center text-center gap-10">
-                    <img src="sadPokemon1.png" alt="Pokemon Sad Png @clipartmax.com" className='w-72' />
-                    <div className="flex flex-col gap-6 tracking-widest mt-4">
-                        <span className="text-6xl block"><span>4  0  4</span></span>
-                        <span className="text-xl">Sorry, We couldn{"'"}t the pokemon that you are looking for!</span>
-                    </div>
-                </div>
+            <div className="bg-slate-100 dark:bg-slate-800 w-full h-screen flex justify-center items-center"      >
+                <Waveform size={60} color="#3d3e7c" />
             </div>
         )
     }
