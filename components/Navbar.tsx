@@ -6,27 +6,41 @@ import { useContext, useEffect, useState } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import WindowedSelect, { createFilter } from "react-windowed-select";
 import { InputContext } from '../context/InputPokemon';
+import types from '../data/types.json';
 import Toggle from './Toggle';
 
 function Navbar() {
   const { updateInput } = useContext(InputContext)
   const [pokemon, setPokemon] = useState([]);
-  const [input, setInput] = useState('')
+  const [inputName, setInputName] = useState('')
+  const [inputType, setInputType] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  const handleClick = () => {
+  const handleName = () => {
     setIsLoading(true)
-    updateInput(input)
-    router.push(`/${input}`)
-    updateInput('')
+    updateInput(inputName)
+    router.push(`/${inputName}`)
     setTimeout(() => {
       setIsLoading(false)
     }, 1000)
   }
 
-  const handleSelected = (selectedPokemon: any) => {
-    setInput(selectedPokemon.value)
+  const handleType = () => {
+    setIsLoading(true)
+    updateInput(inputType)
+    router.push(`/types`)
+    setTimeout(() => {
+      setIsLoading(false)
+    }, 1000)
+  }
+
+  const handleNameSelected = (selectedPokemon: any) => {
+    setInputName(selectedPokemon.value)
+  }
+
+  const handleTypeSelected = (selectedPokemon: any) => {
+    setInputType(selectedPokemon.label)
   }
 
   useEffect(() => {
@@ -47,11 +61,19 @@ function Navbar() {
         <Link href="/" className="flex items-center">
           <span className="self-center w-24"><img src="pokedex-logo.png" alt="pokedex-logo" /></span>
         </Link>
-        <div className="flex items-stretch">
-          <WindowedSelect options={names} windowThreshold={50} filterOption={customFilter} onChange={handleSelected} onKeyDown={handleClick} className='w-[70vw] md:w-[50vw]' />
-          <button title='button' type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm p-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 rounded-r-full" onClick={handleClick}>
-            {isLoading ? <Ring size={14} color="#eee" /> : <AiOutlineSearch />}
-          </button>
+        <div className='flex gap-16'>
+          <div className="flex items-stretch">
+            <WindowedSelect options={names} windowThreshold={50} filterOption={customFilter} onChange={handleNameSelected} onKeyDown={handleName} className='w-48' placeholder='Select Per Name...'/>
+            <button title='button' type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm p-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 rounded-r-full" onClick={handleName}>
+              {isLoading ? <Ring size={14} color="#eee" /> : <AiOutlineSearch />}
+            </button>
+          </div>
+          <div className="flex items-stretch">
+            <WindowedSelect options={types} windowThreshold={50} filterOption={customFilter} onChange={handleTypeSelected} onKeyDown={handleType} className='w-48' placeholder='Select Per Type...' />
+            <button title='button' type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm p-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 rounded-r-full" onClick={handleType}>
+              {isLoading ? <Ring size={14} color="#eee" /> : <AiOutlineSearch />}
+            </button>
+          </div>
         </div>
         <Toggle />
       </div>

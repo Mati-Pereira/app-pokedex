@@ -15,6 +15,7 @@ interface InputContextProps {
 export const ContextInput = ({ children }: Props) => {
   const [input, setInput] = useState('')
   const updateInput = (value: string) => { setInput(value) }
+  
   return (
     <InputContext.Provider value={{ input, updateInput }} >{children}</InputContext.Provider>
   )
