@@ -14,24 +14,25 @@ function Navbar() {
   const [pokemon, setPokemon] = useState([]);
   const [inputName, setInputName] = useState('')
   const [inputType, setInputType] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingName, setIsLoadingName] = useState(false)
+  const [isLoadingType, setIsLoadingType] = useState(false)
   const router = useRouter()
 
   const handleName = () => {
-    setIsLoading(true)
+    setIsLoadingName(true)
     updateInput(inputName)
     router.push(`/${inputName}`)
     setTimeout(() => {
-      setIsLoading(false)
+      setIsLoadingName(false)
     }, 1000)
   }
 
   const handleType = () => {
-    setIsLoading(true)
+    setIsLoadingType(true)
     updateInput(inputType)
     router.push(`/types`)
     setTimeout(() => {
-      setIsLoading(false)
+      setIsLoadingType(false)
     }, 1000)
   }
 
@@ -61,17 +62,17 @@ function Navbar() {
         <Link href="/" className="flex items-center">
           <span className="self-center w-24"><img src="pokedex-logo.png" alt="pokedex-logo" /></span>
         </Link>
-        <div className='flex gap-16'>
+        <div className='flex flex-col md:flex-row gap-8 md:gap-16'>
           <div className="flex items-stretch">
-            <WindowedSelect options={names} windowThreshold={50} filterOption={customFilter} onChange={handleNameSelected} onKeyDown={handleName} className='w-48' placeholder='Select Per Name...'/>
+            <WindowedSelect options={names} windowThreshold={50} filterOption={customFilter} onChange={handleNameSelected} onKeyDown={handleName} className='w-48' placeholder='Select Per Name...' />
             <button title='button' type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm p-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 rounded-r-full" onClick={handleName}>
-              {isLoading ? <Ring size={14} color="#eee" /> : <AiOutlineSearch />}
+              {isLoadingName ? <Ring size={14} color="#eee" /> : <AiOutlineSearch />}
             </button>
           </div>
           <div className="flex items-stretch">
             <WindowedSelect options={types} windowThreshold={50} filterOption={customFilter} onChange={handleTypeSelected} onKeyDown={handleType} className='w-48' placeholder='Select Per Type...' />
             <button title='button' type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm p-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 rounded-r-full" onClick={handleType}>
-              {isLoading ? <Ring size={14} color="#eee" /> : <AiOutlineSearch />}
+              {isLoadingType ? <Ring size={14} color="#eee" /> : <AiOutlineSearch />}
             </button>
           </div>
         </div>
