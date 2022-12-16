@@ -59,13 +59,13 @@ Go to the project directory
 Install dependencies
 
 ```bash
-  npm install
+  yarn
 ```
 
 Run in dev mode
 
 ```bash
-  npm run dev
+  yarn dev
 ```
 
 ## Tech Stack
