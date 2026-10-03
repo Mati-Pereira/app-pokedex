@@ -43,7 +43,7 @@ for (const [index, label, first, second, expected] of [
   test(`${label} search preserves selection keys and submits only a valid closed-menu Enter or button`, async () => {
     const originalFetch = global.fetch;
     const originalTimeout = global.setTimeout;
-    global.fetch = async () => ({ json: async () => ({ results: [] }) });
+    global.fetch = async () => ({ ok: true, json: async () => ({ results: [] }) });
     global.setTimeout = (callback) => { callback(); return 0; };
     navigations.length = 0;
     let tree;
@@ -93,7 +93,7 @@ for (const [index, label] of [[0, 'name'], [1, 'type']]) {
   for (const outcome of ['success', 'false', 'cancelled', 'error']) {
     test(`${label} search keeps loading while pending and recovers after ${outcome}`, async () => {
       const originalFetch = global.fetch;
-      global.fetch = async () => ({ json: async () => ({ results: [] }) });
+      global.fetch = async () => ({ ok: true, json: async () => ({ results: [] }) });
       let resolveNavigation;
       let rejectNavigation;
       pushResult = () => new Promise((resolve, reject) => {
@@ -152,7 +152,7 @@ for (const [index, label] of [[0, 'name'], [1, 'type']]) {
 
 test('type selection follows URL changes and submits the restored value', async () => {
   const originalFetch = global.fetch;
-  global.fetch = async () => ({ json: async () => ({ results: [] }) });
+  global.fetch = async () => ({ ok: true, json: async () => ({ results: [] }) });
   router.pathname = '/types';
   router.query = { type: 'fire' };
   navigations.length = 0;

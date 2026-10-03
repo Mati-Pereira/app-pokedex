@@ -15,6 +15,8 @@ const Types = () => {
     const [allPokemons, setAllPokemons] = useState<PokemonDetails[]>([])
     const [pagePokemons, setPagePokemons] = useState<PokemonDetails[]>([])
     const [currentPage, setCurrentPage] = useState(1)
+    const [error, setError] = useState("")
+    const [retry, setRetry] = useState(0)
     const pageCount = Math.ceil(allPokemons.length / 9)
     const router = useRouter()
     const queryType = router.query.type
@@ -30,6 +32,8 @@ const Types = () => {
     useEffect(() => {
         if (!router.isReady) return
         let active = true
+        const controller = new AbortController()
+        setError("")
         setCurrentPage(1)
         setAllPokemons([])
         setPagePokemons([])
@@ -40,31 +44,45 @@ const Types = () => {
         async function getPokemon() {
             setLoading(true)
             try {
-                const res = await fetch(`https://pokeapi.co/api/v2/type/${encodeURIComponent(type)}`)
+                const res = await fetch(`https://pokeapi.co/api/v2/type/${encodeURIComponent(type)}`, { signal: controller.signal })
                 if (!res.ok) throw new Error(`Type request failed: HTTP ${res.status}`)
                 const data = await res.json()
+                if (!Array.isArray(data.pokemon)) throw new Error("Invalid type response")
                 const promises = data.pokemon.map(async (entry: { pokemon: { url: string } }) => {
-                    const res = await fetch(entry.pokemon.url)
+                    const res = await fetch(entry.pokemon.url, { signal: controller.signal })
                     if (!res.ok) throw new Error(`Pokemon request failed: HTTP ${res.status}`)
-                    return res.json()
+                    const detail = await res.json()
+                    if (!detail || typeof detail.name !== "string" || !detail.sprites || !Array.isArray(detail.types)) {
+                        throw new Error("Invalid Pokemon response")
+                    }
+                    return detail
                 })
                 const results = await Promise.all(promises)
                 if (!active) return
                 setAllPokemons(results)
                 setPagePokemons(results.slice(0, 9))
-            } catch (error) {
-                if (active) console.error(error)
+            } catch {
+                controller.abort()
+                if (active) setError("Unable to load Pokemon for this type. Please try again.")
             } finally {
                 if (active) setLoading(false)
             }
         }
         getPokemon()
-        return () => { active = false }
-    }, [router.isReady, type])
+        return () => { active = false; controller.abort() }
+    }, [router.isReady, type, retry])
     if (isLoading) {
         return (
             <div className="bg-slate-100 dark:bg-slate-800 w-full h-screen flex justify-center items-center"      >
                 <Waveform size={60} color="#3d3e7c" />
+            </div>
+        )
+    }
+    if (error) {
+        return (
+            <div className="px-6 py-8 bg-slate-100 dark:bg-slate-800 dark:text-slate-50">
+                <p role="alert">{error}</p>
+                <button type="button" className="btn mt-4" onClick={() => setRetry(value => value + 1)}>Try again</button>
             </div>
         )
     }
