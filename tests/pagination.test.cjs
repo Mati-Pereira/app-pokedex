@@ -23,6 +23,7 @@ function load(relative) {
     if (name === 'next/link') return { __esModule: true, default: ({ children }) => children };
     if (name === '../components/Grid') return { __esModule: true, default: ({ children }) => children };
     if (name === '../components/Pokemon') return { __esModule: true, default: MockPokemon };
+    if (name === 'next/dynamic') return { __esModule: true, default: () => MockPagination };
     if (name === 'react-responsive-pagination') return { __esModule: true, default: MockPagination };
     if (name === 'react-windowed-select') return { __esModule: true, default: MockSelect, createFilter: () => () => true };
     if (name === '../context/InputPokemon') return { InputContext: context };
@@ -86,5 +87,30 @@ test('invalid API counts show the recoverable error instead of incorrect paginat
       assert.equal(tree.root.findAllByType(MockPagination).length, 0);
       assert.ok(tree.root.findAllByType('button').some(button => button.props.children === 'Try again'));
     });
+  }
+});
+
+
+test('both page pagination components render on the server without loading the browser library', () => {
+  const vm = require('node:vm');
+  const { renderToString } = require('react-dom/server');
+  const dynamic = require('next/dynamic');
+  for (const relative of ['pages/index.tsx', 'pages/types.tsx']) {
+    const filename = path.resolve(__dirname, '..', relative);
+    const source = ts.createSourceFile(filename, fs.readFileSync(filename, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const declaration = source.statements.find(statement => ts.isVariableStatement(statement) && statement.declarationList.declarations.some(item => item.name.getText(source) === 'Pagination'));
+    assert.ok(declaration, 'Pagination declaration exists');
+    const compiled = ts.transpileModule(declaration.getText(source) + '\nexports.Pagination = Pagination;', { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+    let imported = false;
+    const context = { exports: {}, dynamic, require() { imported = true; throw new Error('Browser library loaded on server'); } };
+    vm.runInNewContext(compiled, context);
+    const warnings = [];
+    const originalError = console.error;
+    console.error = (...args) => warnings.push(args.join(' '));
+    try {
+      assert.equal(renderToString(React.createElement(context.exports.Pagination, { current: 1, total: 3, onPageChange() {} })), '');
+      assert.equal(imported, false);
+      assert.deepEqual(warnings, []);
+    } finally { console.error = originalError; }
   }
 });

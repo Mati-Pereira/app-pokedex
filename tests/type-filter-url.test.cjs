@@ -20,7 +20,8 @@ loaded.require = name => {
   if (name === 'next/link') return { __esModule: true, default: ({ children }) => children };
   if (name === '../components/Grid') return { __esModule: true, default: ({ children }) => children };
   if (name === '../components/Pokemon') return { __esModule: true, default: MockPokemon };
-  if (name === 'react-responsive-pagination') return { __esModule: true, default: MockPagination };
+  if (name === 'next/dynamic') return { __esModule: true, default: () => MockPagination };
+    if (name === 'react-responsive-pagination') return { __esModule: true, default: MockPagination };
   return originalRequire(name);
 };
 loaded._compile(ts.transpileModule(fs.readFileSync(filename, 'utf8'), {

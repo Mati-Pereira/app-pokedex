@@ -3,10 +3,12 @@ import { Waveform } from "@uiball/loaders";
 import type { NextPage } from "next";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import Pagination from "react-responsive-pagination";
+import dynamic from "next/dynamic";
 import Grid from "../components/Grid";
 import Pokemon from "../components/Pokemon";
 import { PokemonDetails } from "../types/pokemonDetails";
+
+const Pagination = dynamic(() => import("react-responsive-pagination"), { ssr: false });
 
 const pokemonsPerPage = 9;
 

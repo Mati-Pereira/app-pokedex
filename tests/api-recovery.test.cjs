@@ -23,6 +23,7 @@ function load(relative) {
     if (name === 'next/link') return { __esModule: true, default: ({ children }) => children };
     if (name === '../components/Grid') return { __esModule: true, default: ({ children }) => children };
     if (name === '../components/Pokemon') return { __esModule: true, default: MockPokemon };
+    if (name === 'next/dynamic') return { __esModule: true, default: () => MockPagination };
     if (name === 'react-responsive-pagination') return { __esModule: true, default: MockPagination };
     if (name === 'react-windowed-select') return { __esModule: true, default: MockSelect, createFilter: () => () => true };
     if (name === '../context/InputPokemon') return { InputContext: context };
