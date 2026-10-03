@@ -36,3 +36,19 @@ API failure/retry, stale requests, and navigation cancellation were covered by a
 - Browserslist reported outdated browser compatibility data. Updating it belongs in a separate dependency maintenance step.
 - Type filtering still fetches all matching Pokemon details before displaying nine cards.
 - No deployment or validation of the hosting environment was performed.
+
+## Next.js 14 migration verification
+
+Validated on October 3, 2026, using Node 24.19.0, npm 10.9.4 and TypeScript 5.9.3.
+
+- Next.js / eslint-config-next: 13.0.4 to 14.2.35.
+- ESLint: 8.28.0 to 8.57.1, required by the resolved typescript-eslint packages (ESLint >=8.57). Initial peer warnings were resolved; the final npm dependency tree check exited successfully.
+- React / React DOM remain 18.2.0; other direct application dependencies retain their installed versions.
+- npm ci passed with the updated lockfile; 485 packages installed. npm synchronized framework/lint transitive dependencies and pruned historical lock entries not required by package.json. No direct package was removed.
+- Type checks, 48 regression tests, lint and production build passed. The build generated 1,355 static pages; next start successfully served the result.
+- No changes to application source, routing, styles or next.config.js were necessary.
+- Production browser checks passed: empty search buttons, list page 2, card-to-details navigation, six-row stats table, shiny image anchor, name selection/submission with Enter, type submission with the button, filtered page 2, filter reload returning to page 1, switching fire to water, dark mode retained on refresh, direct details, and an unknown Pokemon 404.
+- At 390 x 844, both filtered list and Bulbasaur details had matching available/content widths of 375 px and no horizontal page overflow. The normal desktop view also retained the existing layout.
+- No warnings/errors were observed in the production browser console during these checks. API failure/cancellation behaviors remain verified with mocked regression tests rather than injected production network failures.
+- The known large detail payload warnings remain. npm also reports deprecation warnings for ESLint 8 and some tooling dependencies. Next.js 14 and ESLint 8 are intermediate migration steps; continue the planned framework/lint upgrades separately.
+- No deployment, push or hosted runtime validation was performed.

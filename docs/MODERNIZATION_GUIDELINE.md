@@ -89,7 +89,7 @@ Usar commits `chore:` para versões/configuração e `fix:` quando houver uma co
 
 - [x] Mapear a compatibilidade declarada das bibliotecas com React 18 e registrar pendências para React 19 em `docs/DEPENDENCY_COMPATIBILITY.md`. A execução com as futuras versões ainda deve ser validada.
 - [x] Revisar pacotes instalados mas não usados: React Query sem uso encontrado no app; remoção fica para um passo separado.
-- [ ] Avançar do Next.js 13 para o 14 como etapa intermediária, com os ajustes necessários e verificações completas.
+- [x] Avançar para Next.js 14.2.35 e eslint-config-next 14.2.35; alinhar ESLint 8.57.1 aos requisitos transitivos. Instalação limpa, árvore de dependências, tipos, lint, 48 testes, build e verificações de produção passaram, mantendo React 18.2 e Pages Router.
 - [ ] Avançar para o Next.js 15 em outro passo, alinhando React e seus tipos conforme os requisitos de compatibilidade.
 - [ ] Avançar para o Next.js 16 ou outra linha com suporte confirmada no momento da execução.
 - [ ] Adaptar o lint e a configuração do ESLint no ponto exigido pela atualização. No Next.js 16, `next lint` foi removido e o lint precisa ser executado separadamente do build.
