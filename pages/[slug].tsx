@@ -56,8 +56,20 @@ function Details({ data }: DetailsProps) {
 export default Details
 export const getStaticProps: GetStaticProps = async context => {
   const slug = context.params?.slug
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${slug}`)
+  if (typeof slug !== "string" || !slug.trim()) {
+    return { notFound: true };
+  }
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(slug)}`)
+  if (res.status === 404) {
+    return { notFound: true };
+  }
+  if (!res.ok) {
+    throw new Error(`Failed to fetch Pokemon details: HTTP ${res.status}`);
+  }
   const data = await res.json()
+  if (!data || typeof data.name !== "string") {
+    throw new Error("Invalid Pokemon details response");
+  }
   return {
     props: {
       data
