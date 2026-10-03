@@ -42,6 +42,16 @@ I learned a lot about handling files that came from an external API, and how to 
 
 [MIT](https://choosealicense.com/licenses/mit/)
 
+## Runtime requirements
+
+Use Node.js **24.x LTS** and npm **10.9.4**. Node 24.19.0 is the version used for the local production checks. The project accepts newer minor and patch releases within Node 24; re-run the checks when updating the runtime.
+
+The Node major version is declared in `package.json` and `.nvmrc`. With nvm on macOS/Linux, run `nvm install` and `nvm use`. On Windows, select Node 24 with your preferred Node installer or version manager; `.nvmrc` does not automatically switch the runtime in every manager.
+
+Node 24 satisfies the published minimum Node requirements for the planned Next.js 14 and 16 steps. Each framework upgrade still requires its own validation. Vercel supports 24.x and reads `engines.node`; the deployed project's actual runtime has not been inspected or changed.
+
+References checked on October 3, 2026: [Node.js releases](https://nodejs.org/en/about/previous-releases), [Next.js 14 requirements](https://nextjs.org/docs/14/getting-started/installation), [Next.js 16 requirements](https://nextjs.org/docs/app/guides/upgrading/version-16), [Vercel Node.js versions](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions).
+
 ## Run Locally
 
 Clone the project

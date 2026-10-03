@@ -78,7 +78,7 @@ Critério de conclusão: instalação reproduzível, verificações de tipos e l
 
 ### 3. Atualizar TypeScript e preparar o ambiente
 
-- [ ] Definir uma versão compatível de Node para desenvolvimento e produção, conferindo também o ambiente de hospedagem.
+- [x] Definir Node 24.x LTS para desenvolvimento e produção, registrar em `engines.node` e `.nvmrc` e conferir o suporte documentado da Vercel. A versão efetiva da hospedagem ainda deve ser confirmada antes do deploy.
 - [ ] Atualizar TypeScript para uma versão 5.x compatível e corrigir os problemas de tipos introduzidos pela atualização.
 - [ ] Ajustar tipos de Node e React conforme a versão de runtime e de React usada em cada etapa.
 
