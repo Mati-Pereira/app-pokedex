@@ -60,7 +60,7 @@ As versões exatas de destino serão confirmadas na documentação oficial e nas
 ### 1. Corrigir os problemas atuais, um por vez
 
 - [x] Corrigir a busca por teclado: digitar e navegar pelas opções não deve disparar a navegação inadvertidamente; definir e verificar o comportamento de Enter e do botão de busca.
-- [ ] Validar buscas sem seleção e acompanhar o carregamento pela conclusão da navegação, em vez de temporizadores fixos.
+- [x] Validar buscas sem seleção e acompanhar o carregamento pela conclusão da navegação, em vez de temporizadores fixos.
 - [ ] Persistir o filtro por tipo na URL para permitir atualização e acesso direto; reiniciar a paginação ao mudar o tipo.
 - [ ] Tratar falhas de requisição com estados de erro e recuperação, finalizando o carregamento e evitando resultados de requisições antigas.
 - [ ] Obter o total da paginação da API, em vez de usar um número fixo.

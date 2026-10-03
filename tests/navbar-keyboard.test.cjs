@@ -8,7 +8,8 @@ const React = require('react');
 const { create, act } = require('react-test-renderer');
 
 const navigations = [];
-const router = { push: (url) => { navigations.push(url); return Promise.resolve(true); } };
+let pushResult = () => Promise.resolve(true);
+const router = { push: (url) => { navigations.push(url); return pushResult(); } };
 const context = React.createContext({ updateInput() {} });
 function MockSelect() { return null; }
 const filename = path.resolve(__dirname, '../components/Navbar.tsx');
@@ -57,7 +58,7 @@ for (const [index, label, first, second, expected] of [
       const button = () => tree.root.findAllByType('button')[index];
 
       assert.equal(press('Enter').defaultPrevented, false);
-      act(() => button().props.onClick());
+      act(() => { button().props.onClick(); });
       assert.deepEqual(navigations, []);
 
       act(() => select().props.onChange({ value: first, label: first }));
@@ -77,7 +78,8 @@ for (const [index, label, first, second, expected] of [
       assert.deepEqual(navigations, [], 'IME composition must not submit a search');
       assert.equal(press('Enter').defaultPrevented, true);
       assert.deepEqual(navigations, [expected]);
-      act(() => button().props.onClick());
+      await act(async () => {});
+      await act(async () => { await button().props.onClick(); });
       assert.deepEqual(navigations, [expected, expected]);
     } finally {
       if (tree) act(() => tree.unmount());
@@ -85,4 +87,65 @@ for (const [index, label, first, second, expected] of [
       global.setTimeout = originalTimeout;
     }
   });
+}
+
+for (const [index, label] of [[0, 'name'], [1, 'type']]) {
+  for (const outcome of ['success', 'false', 'cancelled', 'error']) {
+    test(`${label} search keeps loading while pending and recovers after ${outcome}`, async () => {
+      const originalFetch = global.fetch;
+      global.fetch = async () => ({ json: async () => ({ results: [] }) });
+      let resolveNavigation;
+      let rejectNavigation;
+      pushResult = () => new Promise((resolve, reject) => {
+        resolveNavigation = resolve;
+        rejectNavigation = reject;
+      });
+      navigations.length = 0;
+      let tree;
+      try {
+        await act(async () => { tree = create(React.createElement(Navbar)); });
+        const selects = () => tree.root.findAllByType(MockSelect);
+        const buttons = () => tree.root.findAllByType('button');
+        act(() => {
+          selects()[0].props.onChange({ value: 'pikachu', label: 'pikachu' });
+          selects()[1].props.onChange({ value: 'fire', label: 'fire' });
+        });
+        let pending;
+        act(() => { pending = buttons()[index].props.onClick(); });
+        assert.equal(buttons()[index].props['aria-busy'], true);
+        assert.equal(buttons()[1 - index].props['aria-busy'], false);
+        assert.equal(buttons()[0].props.disabled, true);
+        assert.equal(buttons()[1].props.disabled, true);
+        act(() => {
+          buttons()[index].props.onClick();
+          buttons()[1 - index].props.onClick();
+          selects()[index].props.onKeyDown(keyEvent('Enter'));
+        });
+        assert.equal(navigations.length, 1, 'pending navigation must block duplicate and competing searches');
+        // An event-loop turn must not clear loading while router.push is unresolved.
+        await act(async () => { await new Promise(setImmediate); });
+        assert.equal(buttons()[index].props['aria-busy'], true);
+        await act(async () => {
+          if (outcome === 'success') resolveNavigation(true);
+          if (outcome === 'false') resolveNavigation(false);
+          if (outcome === 'cancelled') rejectNavigation(Object.assign(new Error('Cancelled'), { cancelled: true }));
+          if (outcome === 'error') rejectNavigation(new Error('Navigation failed'));
+          await pending;
+        });
+        assert.equal(buttons()[index].props['aria-busy'], false);
+        assert.equal(buttons()[0].props.disabled, false);
+        assert.equal(buttons()[1].props.disabled, false);
+        const alerts = tree.root.findAllByProps({ role: 'alert' });
+        assert.equal(alerts.length, outcome === 'error' ? 1 : 0);
+        pushResult = () => Promise.resolve(true);
+        await act(async () => { await buttons()[index].props.onClick(); });
+        assert.equal(navigations.length, 2, 'a new search must work after completion or failure');
+        assert.equal(tree.root.findAllByProps({ role: 'alert' }).length, 0);
+      } finally {
+        if (tree) act(() => tree.unmount());
+        global.fetch = originalFetch;
+        pushResult = () => Promise.resolve(true);
+      }
+    });
+  }
 }
