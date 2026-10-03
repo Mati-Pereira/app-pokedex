@@ -29,15 +29,6 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [router.events])
   useEffect(() => {
     setIsLoading(true)
-    if (
-      localStorage.theme === 'dark' ||
-      (!('theme' in localStorage) &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches)
-    ) {
-      document.documentElement.classList.add('dark'); // add dark to the <html></html> itself as <html class='dark'></html>
-    } else {
-      document.documentElement.classList.remove('dark'); // remove dark from the html document if any
-    }
     setTimeout(() => {
       setIsLoading(false);
     }, 500)
