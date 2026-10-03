@@ -101,3 +101,5 @@ The TypeScript modernization step uses TypeScript 5.9.3 and `@types/node` 24.19.
 **Client:** React, Next.js, TailwindCSS, Typescript
 
 **Server:** Node
+
+The Next.js 15 step uses Next.js and eslint-config-next 15.5.27, preserving React 18.2 and Pages Router. Installation, dependencies, types, lint, 48 tests, production build and focused browser checks passed. Static generation is limited to two simultaneous pages after external API connection timeouts; see the production baseline for details and experimental configuration limitations.

@@ -52,3 +52,25 @@ Validated on October 3, 2026, using Node 24.19.0, npm 10.9.4 and TypeScript 5.9.
 - No warnings/errors were observed in the production browser console during these checks. API failure/cancellation behaviors remain verified with mocked regression tests rather than injected production network failures.
 - The known large detail payload warnings remain. npm also reports deprecation warnings for ESLint 8 and some tooling dependencies. Next.js 14 and ESLint 8 are intermediate migration steps; continue the planned framework/lint upgrades separately.
 - No deployment, push or hosted runtime validation was performed.
+
+## Next.js 15 migration
+
+Environment: Node 24.19.0, npm 10.9.4 and TypeScript 5.9.3, checked on October 3, 2026.
+
+- Next.js and eslint-config-next were upgraded from 14.2.35 to 15.5.27. React / React DOM remain at 18.2.0, with existing React types and Pages Router.
+- npm ci passed with 464 packages installed; npm ls --all passed without peer dependency conflicts. Type checks, 48 regression tests and lint passed.
+- Removed swcMinify from next.config.js because Next.js 15 no longer accepts that option; framework minification remains enabled by default.
+- Two initial builds compiled successfully but failed during static generation with PokeAPI connection timeouts. A standalone API request succeeded. To reduce concurrent external requests, static generation uses two workers and one page per worker (experimental.cpus and staticGenerationMaxConcurrency). This preserves the full set of pre-rendered pages and can increase build time. These experimental settings need review during the Next.js 16 step; they cannot guarantee availability of the external API.
+- next lint still works in this version but reports its deprecation. Migration to the ESLint CLI remains a separate step before Next.js 16.
+- Existing large detail payload warnings remain; reducing serialized API data is a separate performance change.
+
+References: [Next.js 15 and React 18 Pages Router support](https://nextjs.org/blog/next-15), [static generation concurrency options](https://nextjs.org/docs/app/api-reference/config/next-config-js/staticGeneration).
+
+### Final production verification
+
+- The build with bounded concurrency passed and generated all 1,355 static pages. Detail generation took approximately 340 seconds on this machine; build duration depends on the API and environment. The production server started successfully.
+- Production browser checks passed: empty searches, list page 2, card navigation to Caterpie, six-row stats table, shiny image anchor, Pikachu name selection/submission with Enter, fire type submission with the button, filtered page 2, and reload preserving fire while resetting to page 1.
+- Saved dark mode remained applied after reload; the original light mode was restored afterward. Direct Bulbasaur details loaded and an unknown Pokemon address displayed 404.
+- At a 390 x 844 viewport, both the filtered list and Bulbasaur details measured 375 px available/content width, without horizontal page overflow. The temporary viewport override was reset afterward.
+- No warning/error entries were observed in the production browser console before the intentional 404 check. API failure and cancellation remain covered by mocked regression tests, rather than production fault injection.
+- No application components or styles were changed. No deployment, push or hosted runtime verification was performed.
