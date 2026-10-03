@@ -63,7 +63,7 @@ As versões exatas de destino serão confirmadas na documentação oficial e nas
 - [x] Validar buscas sem seleção e acompanhar o carregamento pela conclusão da navegação, em vez de temporizadores fixos.
 - [x] Persistir o filtro por tipo na URL para permitir atualização e acesso direto; reiniciar a paginação ao mudar o tipo.
 - [x] Tratar falhas de requisição com estados de erro e recuperação, finalizando o carregamento e evitando resultados de requisições antigas.
-- [ ] Obter o total da paginação da API, em vez de usar um número fixo.
+- [x] Obter o total da paginação da API, em vez de usar um número fixo.
 - [ ] Investigar o aviso de renderização no servidor da biblioteca de paginação e corrigir sua causa sem atualizar todo o framework.
 
 Cada item é um passo próprio, com um commit `fix:`. Melhorias adicionais, como buscar apenas os detalhes dos Pokémon da página filtrada, devem ter um passo separado quando necessário.

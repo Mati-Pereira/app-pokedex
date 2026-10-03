@@ -8,11 +8,11 @@ import Grid from "../components/Grid";
 import Pokemon from "../components/Pokemon";
 import { PokemonDetails } from "../types/pokemonDetails";
 
-const totalOfPokemons = 1154;
 const pokemonsPerPage = 9;
-const pageCount = Math.ceil(totalOfPokemons / pokemonsPerPage);
 
 const Index: NextPage = () => {
+  const [totalOfPokemons, setTotalOfPokemons] = useState(0);
+  const pageCount = Math.ceil(totalOfPokemons / pokemonsPerPage);
   const [off, setOff] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setLoading] = useState(true);
@@ -30,12 +30,12 @@ const Index: NextPage = () => {
       setPokemons([]);
       try {
         const res = await fetch(
-          `https://pokeapi.co/api/v2/pokemon?offset=${off}&limit=9`,
+          `https://pokeapi.co/api/v2/pokemon?offset=${off}&limit=${pokemonsPerPage}`,
           { signal: controller.signal }
         );
         if (!res.ok) throw new Error(`Pokemon list request failed: HTTP ${res.status}`);
         const data = await res.json();
-        if (!Array.isArray(data.results)) throw new Error("Invalid Pokemon list response");
+        if (!Number.isSafeInteger(data.count) || data.count < 0 || !Array.isArray(data.results)) throw new Error("Invalid Pokemon list response");
         const results = await Promise.all(data.results.map(async (pokemon: { url: string }) => {
           const res = await fetch(pokemon.url, { signal: controller.signal });
           if (!res.ok) throw new Error(`Pokemon request failed: HTTP ${res.status}`);
@@ -45,7 +45,10 @@ const Index: NextPage = () => {
           }
           return detail;
         }));
-        if (active) setPokemons(results);
+        if (active) {
+          setTotalOfPokemons(data.count);
+          setPokemons(results);
+        }
       } catch {
         controller.abort();
         if (active) setError("Unable to load Pokemon. Please try again.");
@@ -58,7 +61,7 @@ const Index: NextPage = () => {
   }, [off, retry]);
 
   const handlePageChange = (page: number) => {
-    setOff((page - 1) * 9);
+    setOff((page - 1) * pokemonsPerPage);
     setCurrentPage(page);
   };
 
