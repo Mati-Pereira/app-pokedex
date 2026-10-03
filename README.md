@@ -94,6 +94,8 @@ The production server runs at http://localhost:3000. The build currently fetches
 
 Production verification results and remaining limitations are recorded in [docs/PRODUCTION_BASELINE.md](docs/PRODUCTION_BASELINE.md).
 
+The TypeScript modernization step uses TypeScript 5.9.3 and `@types/node` 24.19.1. A clean npm installation, 48 regression tests, type checks, lint, and production build were validated. React and Next.js versions remain at the initial baseline for now.
+
 ## Tech Stack
 
 **Client:** React, Next.js, TailwindCSS, Typescript
