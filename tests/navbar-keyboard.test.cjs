@@ -9,12 +9,12 @@ const { create, act } = require('react-test-renderer');
 
 const navigations = [];
 let pushResult = () => Promise.resolve(true);
-const router = { push: (url) => { navigations.push(url); return pushResult(); } };
+const router = { isReady: true, pathname: "/", query: {}, push: (url) => { navigations.push(url); return pushResult(); } };
 const context = React.createContext({ updateInput() {} });
 function MockSelect() { return null; }
 const filename = path.resolve(__dirname, '../components/Navbar.tsx');
 const compiled = ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
+  compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
 }).outputText;
 const loaded = new Module(filename, module);
 loaded.filename = filename;
@@ -38,7 +38,7 @@ function keyEvent(key, composing = false) {
 
 for (const [index, label, first, second, expected] of [
   [0, 'name', 'pikachu', 'bulbasaur', '/bulbasaur'],
-  [1, 'type', 'fire', 'water', '/types'],
+  [1, 'type', 'fire', 'water', '/types?type=water'],
 ]) {
   test(`${label} search preserves selection keys and submits only a valid closed-menu Enter or button`, async () => {
     const originalFetch = global.fetch;
@@ -149,3 +149,30 @@ for (const [index, label] of [[0, 'name'], [1, 'type']]) {
     });
   }
 }
+
+test('type selection follows URL changes and submits the restored value', async () => {
+  const originalFetch = global.fetch;
+  global.fetch = async () => ({ json: async () => ({ results: [] }) });
+  router.pathname = '/types';
+  router.query = { type: 'fire' };
+  navigations.length = 0;
+  let tree;
+  try {
+    await act(async () => { tree = create(React.createElement(Navbar)); });
+    const select = () => tree.root.findAllByType(MockSelect)[1];
+    assert.equal(select().props.value.value, 'fire');
+    router.query = { type: 'water' };
+    await act(async () => { tree.update(React.createElement(Navbar)); });
+    assert.equal(select().props.value.value, 'water');
+    await act(async () => { await tree.root.findAllByType('button')[1].props.onClick(); });
+    assert.deepEqual(navigations, ['/types?type=water']);
+    router.query = { type: 'unknown' };
+    await act(async () => { tree.update(React.createElement(Navbar)); });
+    assert.equal(select().props.value, null);
+  } finally {
+    if (tree) act(() => tree.unmount());
+    router.pathname = '/';
+    router.query = {};
+    global.fetch = originalFetch;
+  }
+});

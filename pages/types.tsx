@@ -2,22 +2,23 @@
 /* eslint-disable @next/next/no-img-element */
 import { Waveform } from '@uiball/loaders';
 import Link from 'next/link';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Grid from '../components/Grid';
 import Pokemon from '../components/Pokemon';
-import { InputContext } from '../context/InputPokemon';
+import types from '../data/types.json';
 import { PokemonDetails } from '../types/pokemonDetails';
 import Pagination from 'react-responsive-pagination';
 import { useRouter } from 'next/router';
 
 const Types = () => {
-    const { input } = useContext(InputContext)
-    const [isLoading, setLoading] = useState(false)
+    const [isLoading, setLoading] = useState(true)
     const [allPokemons, setAllPokemons] = useState<PokemonDetails[]>([])
     const [pagePokemons, setPagePokemons] = useState<PokemonDetails[]>([])
     const [currentPage, setCurrentPage] = useState(1)
     const pageCount = Math.ceil(allPokemons.length / 9)
     const router = useRouter()
+    const queryType = router.query.type
+    const type = typeof queryType === "string" && types.some(option => option.value === queryType) ? queryType : ""
     const handlePageChange = (page: any) => {
         setLoading(true)
         setCurrentPage(page)
@@ -27,22 +28,39 @@ const Types = () => {
         setLoading(false)
     }
     useEffect(() => {
+        if (!router.isReady) return
+        let active = true
+        setCurrentPage(1)
+        setAllPokemons([])
+        setPagePokemons([])
+        if (!type) {
+            setLoading(false)
+            return
+        }
         async function getPokemon() {
             setLoading(true)
-            const res = await fetch(`https://pokeapi.co/api/v2/type/${input}`)
-            const data = await res.json()
-            const promises = data?.pokemon?.map(async (pokemon: any) => {
-                const res = await fetch(pokemon?.pokemon?.url)
+            try {
+                const res = await fetch(`https://pokeapi.co/api/v2/type/${encodeURIComponent(type)}`)
+                if (!res.ok) throw new Error(`Type request failed: HTTP ${res.status}`)
                 const data = await res.json()
-                return data
-            }) || router.push('/')
-            const results = await Promise.all(promises)
-            setAllPokemons(results)
-            setPagePokemons(results.slice(0, 9))
-            setLoading(false)
-        }   
-        getPokemon().catch(e => console.error(e))
-    }, [input, router])
+                const promises = data.pokemon.map(async (entry: { pokemon: { url: string } }) => {
+                    const res = await fetch(entry.pokemon.url)
+                    if (!res.ok) throw new Error(`Pokemon request failed: HTTP ${res.status}`)
+                    return res.json()
+                })
+                const results = await Promise.all(promises)
+                if (!active) return
+                setAllPokemons(results)
+                setPagePokemons(results.slice(0, 9))
+            } catch (error) {
+                if (active) console.error(error)
+            } finally {
+                if (active) setLoading(false)
+            }
+        }
+        getPokemon()
+        return () => { active = false }
+    }, [router.isReady, type])
     if (isLoading) {
         return (
             <div className="bg-slate-100 dark:bg-slate-800 w-full h-screen flex justify-center items-center"      >
@@ -69,7 +87,7 @@ const Types = () => {
             <Grid>
                 {
                     pagePokemons?.map((pokemon: PokemonDetails) => (
-                        <Link href={pokemon.name} key={pokemon.id}>
+                        <Link href={`/${pokemon.name}`} key={pokemon.id}>
                             <Pokemon image={pokemon.sprites.front_default} text={pokemon.name.toUpperCase()} types={pokemon.types} />
                         </Link>
                     ))

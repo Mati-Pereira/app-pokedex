@@ -42,7 +42,7 @@ function Navbar() {
   }
 
   const handleName = () => navigateSearch(inputName, `/${inputName}`, setIsLoadingName)
-  const handleType = () => navigateSearch(inputType, "/types", setIsLoadingType)
+  const handleType = () => navigateSearch(inputType, `/types?type=${encodeURIComponent(inputType)}`, setIsLoadingType)
 
   const handleNameKeyDown = (event: KeyboardEvent) => {
     if (event.key !== "Enter" || event.nativeEvent.isComposing || isNameMenuOpen || !inputName) return
@@ -70,6 +70,12 @@ function Navbar() {
       .then((data) => setPokemon(data?.results));
   }, []);
 
+  useEffect(() => {
+    if (!router.isReady || router.pathname !== "/types") return
+    const type = router.query.type
+    setInputType(typeof type === "string" && types.some(option => option.value === type) ? type : "")
+  }, [router.isReady, router.pathname, router.query.type]);
+
   const names = pokemon?.map((pokemon: { name: string }) => {
     return { label: pokemon.name, value: pokemon.name }
   })
@@ -90,7 +96,7 @@ function Navbar() {
             </button>
           </div>
           <div className="flex items-stretch">
-            <WindowedSelect options={types} windowThreshold={50} filterOption={customFilter} onChange={handleTypeSelected} onMenuOpen={() => setTypeMenuOpen(true)} onMenuClose={() => setTypeMenuOpen(false)} onKeyDown={handleTypeKeyDown} className='w-48' placeholder='Select Per Type...' />
+            <WindowedSelect value={types.find(option => option.value === inputType) || null} options={types} windowThreshold={50} filterOption={customFilter} onChange={handleTypeSelected} onMenuOpen={() => setTypeMenuOpen(true)} onMenuClose={() => setTypeMenuOpen(false)} onKeyDown={handleTypeKeyDown} className='w-48' placeholder='Select Per Type...' />
             <button title='button' type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm p-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 rounded-r-full" onClick={handleType} disabled={isSearching} aria-busy={isLoadingType} aria-label="Search by type">
               {isLoadingType ? <Ring size={14} color="#eee" /> : <AiOutlineSearch />}
             </button>
