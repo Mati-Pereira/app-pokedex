@@ -39,14 +39,14 @@ function Details({ data }: DetailsProps) {
             </div>
           </div>
           <table className="flex flex-col w-fit justify-around pb-10">
-            <tr className="bg-slate-100 dark:bg-slate-800 dark:border-slate-100 border-slate-800 flex flex-col justify-evenly ">
+            <tbody className="bg-slate-100 dark:bg-slate-800 dark:border-slate-100 border-slate-800 flex flex-col justify-evenly ">
               {data.stats.map((stat, i) => (
-                <div key={i}>
+                <tr key={stat.stat.name}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-800 mb-10 dark:text-white w-36 md:w-40 lg:w-48 border-b border-slate-600">{stat.stat.name}</td>
                   <td className="text-sm text-slate-800 mb-10 dark:text-white font-light px-6 py-4 whitespace-nowrap w-32 md:w-36 lg:w-48 border-b text-center border-slate-600">{stat.base_stat}</td>
-                </div>
+                </tr>
               ))}
-            </tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -56,8 +56,20 @@ function Details({ data }: DetailsProps) {
 export default Details
 export const getStaticProps: GetStaticProps = async context => {
   const slug = context.params?.slug
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${slug}`)
+  if (typeof slug !== "string" || !slug.trim()) {
+    return { notFound: true };
+  }
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(slug)}`)
+  if (res.status === 404) {
+    return { notFound: true };
+  }
+  if (!res.ok) {
+    throw new Error(`Failed to fetch Pokemon details: HTTP ${res.status}`);
+  }
   const data = await res.json()
+  if (!data || typeof data.name !== "string") {
+    throw new Error("Invalid Pokemon details response");
+  }
   return {
     props: {
       data
