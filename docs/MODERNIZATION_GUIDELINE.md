@@ -87,8 +87,8 @@ Usar commits `chore:` para versões/configuração e `fix:` quando houver uma co
 
 ### 4. Atualizar Next.js e React gradualmente
 
-- [ ] Mapear a compatibilidade das bibliotecas de selects, paginação, loaders e outras dependências com as versões de destino do React.
-- [ ] Revisar pacotes instalados mas não usados antes de decidir atualizá-los ou removê-los.
+- [x] Mapear a compatibilidade declarada das bibliotecas com React 18 e registrar pendências para React 19 em `docs/DEPENDENCY_COMPATIBILITY.md`. A execução com as futuras versões ainda deve ser validada.
+- [x] Revisar pacotes instalados mas não usados: React Query sem uso encontrado no app; remoção fica para um passo separado.
 - [ ] Avançar do Next.js 13 para o 14 como etapa intermediária, com os ajustes necessários e verificações completas.
 - [ ] Avançar para o Next.js 15 em outro passo, alinhando React e seus tipos conforme os requisitos de compatibilidade.
 - [ ] Avançar para o Next.js 16 ou outra linha com suporte confirmada no momento da execução.
