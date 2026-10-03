@@ -71,8 +71,8 @@ Cada item é um passo próprio, com um commit `fix:`. Melhorias adicionais, como
 ### 2. Estabelecer a referência de produção e instalação
 
 - [x] Padronizar em npm 10.9.4, usar `package-lock.json` e remover `yarn.lock`; documentar instalação e verificações.
-- [ ] Validar o build de produção e a execução desse build. Se houver defeitos, resolvê-los em passos específicos antes de concluir esta etapa.
-- [ ] Registrar limitações da geração das páginas de detalhes, que atualmente depende de requisições à PokéAPI durante o build.
+- [x] Validar o build de produção e a execução desse build. Se houver defeitos, resolvê-los em passos específicos antes de concluir esta etapa.
+- [x] Registrar limitações da geração das páginas de detalhes, que atualmente depende de requisições à PokéAPI durante o build.
 
 Critério de conclusão: instalação reproduzível, verificações de tipos e lint aprovadas, build aprovado e fluxos essenciais verificados na execução de produção. Falhas de rede devem ser identificadas como tal, sem afirmar que o build passou.
 

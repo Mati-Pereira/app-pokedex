@@ -82,6 +82,8 @@ npm start
 
 The production server runs at http://localhost:3000. The build currently fetches the Pokemon catalog and pre-renders all detail pages using PokeAPI, so it requires network access and may take several minutes or fail if the API is unavailable. Client-side search and lists also require PokeAPI access.
 
+Production verification results and remaining limitations are recorded in [docs/PRODUCTION_BASELINE.md](docs/PRODUCTION_BASELINE.md).
+
 ## Tech Stack
 
 **Client:** React, Next.js, TailwindCSS, Typescript
