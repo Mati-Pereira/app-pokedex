@@ -1,15 +1,17 @@
 /* eslint-disable @next/next/no-img-element */
-import { GetStaticPaths, GetStaticProps } from "next";
-import { PokemonDetails } from "../types/pokemonDetails";
+import { GetStaticPaths, GetStaticProps } from 'next';
+import { PokemonDetails } from '../types/pokemonDetails';
 interface DetailsProps {
   data: PokemonDetails;
 }
 function Details({ data }: DetailsProps) {
   return (
     <>
-      <h1 className="text-4xl text-slate-800 py-10 font-bold dark:text-white w-full flex justify-center">{data.name.toUpperCase()}</h1>
+      <h1 className="flex w-full justify-center py-10 text-4xl font-bold text-slate-800 dark:text-white">
+        {data.name.toUpperCase()}
+      </h1>
       <div className="flex flex-col md:flex-row">
-        <div className="bg-slate-100 dark:bg-slate-800 dark:text-gray-100 w-full md:w-1/2 px-12 flex items-center justify-center flex-col">
+        <div className="flex w-full flex-col items-center justify-center bg-slate-100 px-12 dark:bg-slate-800 dark:text-gray-100 md:w-1/2">
           <div className="carousel w-full bg-slate-100 dark:bg-slate-800">
             <div id="item1" className="carousel-item w-full">
               <img src={data.sprites.front_default} className="w-full" alt="pokemon" />
@@ -24,26 +26,63 @@ function Details({ data }: DetailsProps) {
               <img src={data.sprites.back_shiny} className="w-full" alt="pokemon" />
             </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 w-full py-2 gap-2">
-            <a href="#item1" className="btn btn-xs h-full border-none bg-slate-300 dark:bg-slate-500 dark:hover:bg-slate-300 hover:bg-slate-500" title="pokemon"><img src={data.sprites.front_default} alt="front" /></a>
-            <a href="#item2" className="btn btn-xs h-full border-none bg-slate-300 dark:bg-slate-500 dark:hover:bg-slate-300 hover:bg-slate-500" title="pokemon"><img src={data.sprites.back_default} alt="back" /></a>
-            <a href="#item3" className="btn btn-xs h-full border-none bg-slate-300 dark:bg-slate-500 dark:hover:bg-slate-300 hover:bg-slate-500" title="pokemon"><img src={data.sprites.front_shiny} alt="front_shiny" /></a>
-            <a href="#item4" className="btn btn-xs h-full border-none bg-slate-300 dark:bg-slate-500 dark:hover:bg-slate-300 hover:bg-slate-500" title="pokemon"><img src={data.sprites.back_shiny} alt="back_shiny" /></a>
+          <div className="grid w-full grid-cols-2 gap-2 py-2 md:grid-cols-4">
+            <a
+              href="#item1"
+              className="btn-xs btn h-full border-none bg-slate-300 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-300"
+              title="pokemon"
+            >
+              <img src={data.sprites.front_default} alt="front" />
+            </a>
+            <a
+              href="#item2"
+              className="btn-xs btn h-full border-none bg-slate-300 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-300"
+              title="pokemon"
+            >
+              <img src={data.sprites.back_default} alt="back" />
+            </a>
+            <a
+              href="#item3"
+              className="btn-xs btn h-full border-none bg-slate-300 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-300"
+              title="pokemon"
+            >
+              <img src={data.sprites.front_shiny} alt="front_shiny" />
+            </a>
+            <a
+              href="#item4"
+              className="btn-xs btn h-full border-none bg-slate-300 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-300"
+              title="pokemon"
+            >
+              <img src={data.sprites.back_shiny} alt="back_shiny" />
+            </a>
           </div>
         </div>
-        <div className="flex flex-col justify-center items-center w-full md:w-1/2 px-12 gap-6">
+        <div className="flex w-full flex-col items-center justify-center gap-6 px-12 md:w-1/2">
           <div className="py-10 text-center">
-            <h2 className="text-slate-800 text-2xl mb-5 dark:text-white font-semibold">Abilities</h2>
+            <h2 className="mb-5 text-2xl font-semibold text-slate-800 dark:text-white">
+              Abilities
+            </h2>
             <div className="flex gap-3">
-              {data.abilities.map((ability, i) => (<span key={i} className="my-5 px-5 py-3 text-slate-800 dark:text-white bg-gray-200 overflow-hidden shadow-lg dark:bg-sky-900 rounded-full">{ability.ability.name}</span>))}
+              {data.abilities.map((ability, i) => (
+                <span
+                  key={i}
+                  className="my-5 overflow-hidden rounded-full bg-gray-200 px-5 py-3 text-slate-800 shadow-lg dark:bg-sky-900 dark:text-white"
+                >
+                  {ability.ability.name}
+                </span>
+              ))}
             </div>
           </div>
-          <table className="flex flex-col w-fit justify-around pb-10">
-            <tbody className="bg-slate-100 dark:bg-slate-800 dark:border-slate-100 border-slate-800 flex flex-col justify-evenly ">
+          <table className="flex w-fit flex-col justify-around pb-10">
+            <tbody className="flex flex-col justify-evenly border-slate-800 bg-slate-100 dark:border-slate-100 dark:bg-slate-800">
               {data.stats.map((stat, i) => (
                 <tr key={stat.stat.name}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-800 mb-10 dark:text-white w-36 md:w-40 lg:w-48 border-b border-slate-600">{stat.stat.name}</td>
-                  <td className="text-sm text-slate-800 mb-10 dark:text-white font-light px-6 py-4 whitespace-nowrap w-32 md:w-36 lg:w-48 border-b text-center border-slate-600">{stat.base_stat}</td>
+                  <td className="mb-10 w-36 whitespace-nowrap border-b border-slate-600 px-6 py-4 text-sm font-medium text-slate-800 dark:text-white md:w-40 lg:w-48">
+                    {stat.stat.name}
+                  </td>
+                  <td className="mb-10 w-32 whitespace-nowrap border-b border-slate-600 px-6 py-4 text-center text-sm font-light text-slate-800 dark:text-white md:w-36 lg:w-48">
+                    {stat.base_stat}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -53,42 +92,42 @@ function Details({ data }: DetailsProps) {
     </>
   );
 }
-export default Details
+export default Details;
 export const getStaticProps: GetStaticProps = async context => {
-  const slug = context.params?.slug
-  if (typeof slug !== "string" || !slug.trim()) {
+  const slug = context.params ? context.params['slug'] : undefined;
+  if (typeof slug !== 'string' || !slug.trim()) {
     return { notFound: true };
   }
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(slug)}`)
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(slug)}`);
   if (res.status === 404) {
     return { notFound: true };
   }
   if (!res.ok) {
     throw new Error(`Failed to fetch Pokemon details: HTTP ${res.status}`);
   }
-  const data = await res.json()
-  if (!data || typeof data.name !== "string") {
-    throw new Error("Invalid Pokemon details response");
+  const data = await res.json();
+  if (!data || typeof data.name !== 'string') {
+    throw new Error('Invalid Pokemon details response');
   }
   return {
     props: {
-      data
+      data,
     },
   };
 };
-export const getStaticPaths: GetStaticPaths = async (ctx) => {
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=0&limit=100000`)
-  const data = await res.json()
-  const results = data?.results
+export const getStaticPaths: GetStaticPaths = async ctx => {
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=0&limit=100000`);
+  const data = await res.json();
+  const results = data?.results;
   const paths = results.map((p: { name: string }) => {
     return {
       params: {
-        slug: p.name
-      }
-    }
-  })
+        slug: p.name,
+      },
+    };
+  });
   return {
     paths,
-    fallback: "blocking"
-  }
-}
+    fallback: 'blocking',
+  };
+};
