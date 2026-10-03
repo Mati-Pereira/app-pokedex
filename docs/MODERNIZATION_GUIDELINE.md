@@ -23,7 +23,7 @@ Este guia registra o plano acordado para modernizar o projeto preservando sua es
 
 Não juntar atualização de framework, mudança de estilos e novas funcionalidades no mesmo commit. Uma unidade de atualização pode incluir pacotes que obrigatoriamente precisem mudar juntos para manter a compatibilidade. Se um passo se mostrar grande, dividi-lo em passos menores e explicar a divisão antes de prosseguir.
 
-Os commits serão locais na branch `analise-atualizacao`. Push, publicação e merge ficam fora deste plano até serem solicitados. Não reescrever os commits já existentes.
+Os próximos commits serão locais na branch `chore/continue-modernization`. Push, publicação e merge ficam fora deste plano até serem solicitados. Não reescrever os commits já existentes.
 
 ## Referência inicial
 
@@ -63,33 +63,34 @@ As versões exatas de destino serão confirmadas na documentação oficial e nas
 - [x] Validar buscas sem seleção e acompanhar o carregamento pela conclusão da navegação, em vez de temporizadores fixos.
 - [x] Persistir o filtro por tipo na URL para permitir atualização e acesso direto; reiniciar a paginação ao mudar o tipo.
 - [x] Tratar falhas de requisição com estados de erro e recuperação, finalizando o carregamento e evitando resultados de requisições antigas.
-- [ ] Obter o total da paginação da API, em vez de usar um número fixo.
-- [ ] Investigar o aviso de renderização no servidor da biblioteca de paginação e corrigir sua causa sem atualizar todo o framework.
+- [x] Obter o total da paginação da API, em vez de usar um número fixo.
+- [x] Investigar o aviso de renderização no servidor da biblioteca de paginação e corrigir sua causa sem atualizar todo o framework.
 
 Cada item é um passo próprio, com um commit `fix:`. Melhorias adicionais, como buscar apenas os detalhes dos Pokémon da página filtrada, devem ter um passo separado quando necessário.
 
 ### 2. Estabelecer a referência de produção e instalação
 
-- [ ] Escolher e documentar um gerenciador de pacotes e seu lockfile. O repositório contém `package-lock.json` e `yarn.lock`; não atualizar ambos inadvertidamente.
-- [ ] Validar o build de produção e a execução desse build. Se houver defeitos, resolvê-los em passos específicos antes de concluir esta etapa.
-- [ ] Registrar limitações da geração das páginas de detalhes, que atualmente depende de requisições à PokéAPI durante o build.
+- [x] Padronizar em npm 10.9.4, usar `package-lock.json` e remover `yarn.lock`; documentar instalação e verificações.
+- [x] Validar o build de produção e a execução desse build. Se houver defeitos, resolvê-los em passos específicos antes de concluir esta etapa.
+- [x] Registrar limitações da geração das páginas de detalhes, que atualmente depende de requisições à PokéAPI durante o build.
 
 Critério de conclusão: instalação reproduzível, verificações de tipos e lint aprovadas, build aprovado e fluxos essenciais verificados na execução de produção. Falhas de rede devem ser identificadas como tal, sem afirmar que o build passou.
 
 ### 3. Atualizar TypeScript e preparar o ambiente
 
-- [ ] Definir uma versão compatível de Node para desenvolvimento e produção, conferindo também o ambiente de hospedagem.
-- [ ] Atualizar TypeScript para uma versão 5.x compatível e corrigir os problemas de tipos introduzidos pela atualização.
-- [ ] Ajustar tipos de Node e React conforme a versão de runtime e de React usada em cada etapa.
+- [x] Definir Node 24.x LTS para desenvolvimento e produção, registrar em `engines.node` e `.nvmrc` e conferir o suporte documentado da Vercel. A versão efetiva da hospedagem ainda deve ser confirmada antes do deploy.
+- [x] Atualizar TypeScript para 5.9.3; tipos, lint, 48 testes e build de produção passaram sem alterações no código funcional.
+- [x] Alinhar `@types/node` com Node 24 usando a versão 24.19.1.
+- [ ] Ajustar os tipos de React junto às futuras etapas de atualização de React.
 
 Usar commits `chore:` para versões/configuração e `fix:` quando houver uma correção funcional separável. Não adicionar regras de lint ou refatorações amplas ao passo de TypeScript.
 
 ### 4. Atualizar Next.js e React gradualmente
 
-- [ ] Mapear a compatibilidade das bibliotecas de selects, paginação, loaders e outras dependências com as versões de destino do React.
-- [ ] Revisar pacotes instalados mas não usados antes de decidir atualizá-los ou removê-los.
-- [ ] Avançar do Next.js 13 para o 14 como etapa intermediária, com os ajustes necessários e verificações completas.
-- [ ] Avançar para o Next.js 15 em outro passo, alinhando React e seus tipos conforme os requisitos de compatibilidade.
+- [x] Mapear a compatibilidade declarada das bibliotecas com React 18 e registrar pendências para React 19 em `docs/DEPENDENCY_COMPATIBILITY.md`. A execução com as futuras versões ainda deve ser validada.
+- [x] Revisar pacotes instalados mas não usados: React Query sem uso encontrado no app; remoção fica para um passo separado.
+- [x] Avançar para Next.js 14.2.35 e eslint-config-next 14.2.35; alinhar ESLint 8.57.1 aos requisitos transitivos. Instalação limpa, árvore de dependências, tipos, lint, 48 testes, build e verificações de produção passaram, mantendo React 18.2 e Pages Router.
+- [x] Avançar para Next.js 15.5.27 e eslint-config-next 15.5.27, mantendo React 18.2 e Pages Router. Instalação limpa, dependências, tipos, lint, 48 testes, build e verificações de produção passaram. Removido swcMinify e limitada a geração estática a duas páginas simultâneas após timeouts da PokéAPI; revisar opções experimentais no passo 16.
 - [ ] Avançar para o Next.js 16 ou outra linha com suporte confirmada no momento da execução.
 - [ ] Adaptar o lint e a configuração do ESLint no ponto exigido pela atualização. No Next.js 16, `next lint` foi removido e o lint precisa ser executado separadamente do build.
 - [ ] Revisar as opções de `next.config.js` e mudanças da ferramenta de compilação em cada versão.

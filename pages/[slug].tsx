@@ -7,7 +7,7 @@ interface DetailsProps {
 function Details({ data }: DetailsProps) {
   return (
     <>
-      <h1 className="text-4xl text-slate-800 py-10 font-bold dark:text-white w-screen flex justify-center">{data.name.toUpperCase()}</h1>
+      <h1 className="text-4xl text-slate-800 py-10 font-bold dark:text-white w-full flex justify-center">{data.name.toUpperCase()}</h1>
       <div className="flex flex-col md:flex-row">
         <div className="bg-slate-100 dark:bg-slate-800 dark:text-gray-100 w-full md:w-1/2 px-12 flex items-center justify-center flex-col">
           <div className="carousel w-full bg-slate-100 dark:bg-slate-800">

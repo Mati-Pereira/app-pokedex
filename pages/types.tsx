@@ -7,8 +7,10 @@ import Grid from '../components/Grid';
 import Pokemon from '../components/Pokemon';
 import types from '../data/types.json';
 import { PokemonDetails } from '../types/pokemonDetails';
-import Pagination from 'react-responsive-pagination';
+import dynamic from "next/dynamic";
 import { useRouter } from 'next/router';
+
+const Pagination = dynamic(() => import("react-responsive-pagination"), { ssr: false });
 
 const Types = () => {
     const [isLoading, setLoading] = useState(true)

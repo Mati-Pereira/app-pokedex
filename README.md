@@ -42,6 +42,16 @@ I learned a lot about handling files that came from an external API, and how to 
 
 [MIT](https://choosealicense.com/licenses/mit/)
 
+## Runtime requirements
+
+Use Node.js **24.x LTS** and npm **10.9.4**. Node 24.19.0 is the version used for the local production checks. The project accepts newer minor and patch releases within Node 24; re-run the checks when updating the runtime.
+
+The Node major version is declared in `package.json` and `.nvmrc`. With nvm on macOS/Linux, run `nvm install` and `nvm use`. On Windows, select Node 24 with your preferred Node installer or version manager; `.nvmrc` does not automatically switch the runtime in every manager.
+
+Node 24 satisfies the published minimum Node requirements for the planned Next.js 14 and 16 steps. Each framework upgrade still requires its own validation. Vercel supports 24.x and reads `engines.node`; the deployed project's actual runtime has not been inspected or changed.
+
+References checked on October 3, 2026: [Node.js releases](https://nodejs.org/en/about/previous-releases), [Next.js 14 requirements](https://nextjs.org/docs/14/getting-started/installation), [Next.js 16 requirements](https://nextjs.org/docs/app/guides/upgrading/version-16), [Vercel Node.js versions](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions).
+
 ## Run Locally
 
 Clone the project
@@ -59,7 +69,7 @@ Go to the project directory
 Install dependencies
 
 ```bash
-  npm
+  npm ci
 ```
 
 Run in dev mode
@@ -68,8 +78,28 @@ Run in dev mode
   npm run dev
 ```
 
+## Validation and production
+
+Use npm 10.9.4 and commit changes to `package-lock.json`. The lockfile is the source of dependency versions; use `npm ci` for clean installations.
+
+```bash
+npm test
+npm run typecheck
+npm run lint
+npm run build
+npm start
+```
+
+The production server runs at http://localhost:3000. The build currently fetches the Pokemon catalog and pre-renders all detail pages using PokeAPI, so it requires network access and may take several minutes or fail if the API is unavailable. Client-side search and lists also require PokeAPI access.
+
+Production verification results and remaining limitations are recorded in [docs/PRODUCTION_BASELINE.md](docs/PRODUCTION_BASELINE.md).
+
+The TypeScript modernization step uses TypeScript 5.9.3 and `@types/node` 24.19.1. A clean npm installation, 48 regression tests, type checks, lint, and production build were validated. React remains at 18.2.0. The next migration step upgraded Next.js and eslint-config-next to 14.2.35 and ESLint to 8.57.1; clean installation, dependency tree, types, lint, tests, build, and focused production browser checks passed.
+
 ## Tech Stack
 
 **Client:** React, Next.js, TailwindCSS, Typescript
 
 **Server:** Node
+
+The Next.js 15 step uses Next.js and eslint-config-next 15.5.27, preserving React 18.2 and Pages Router. Installation, dependencies, types, lint, 48 tests, production build and focused browser checks passed. Static generation is limited to two simultaneous pages after external API connection timeouts; see the production baseline for details and experimental configuration limitations.

@@ -111,13 +111,13 @@ function Navbar() {
         </Link>
         <div className='flex flex-col md:flex-row gap-8 md:gap-16'>
           <div className="flex items-stretch">
-            <WindowedSelect isLoading={namesLoading} options={names} windowThreshold={50} filterOption={customFilter} onChange={handleNameSelected} onMenuOpen={() => setNameMenuOpen(true)} onMenuClose={() => setNameMenuOpen(false)} onKeyDown={handleNameKeyDown} className='w-48' placeholder='Select Per Name...' />
+            <WindowedSelect instanceId="pokemon-name" isLoading={namesLoading} options={names} windowThreshold={50} filterOption={customFilter} onChange={handleNameSelected} onMenuOpen={() => setNameMenuOpen(true)} onMenuClose={() => setNameMenuOpen(false)} onKeyDown={handleNameKeyDown} className='w-48' placeholder='Select Per Name...' />
             <button title='button' type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm p-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 rounded-r-full" onClick={handleName} disabled={isSearching} aria-busy={isLoadingName} aria-label="Search by name">
               {isLoadingName ? <Ring size={14} color="#eee" /> : <AiOutlineSearch />}
             </button>
           </div>
           <div className="flex items-stretch">
-            <WindowedSelect value={types.find(option => option.value === inputType) || null} options={types} windowThreshold={50} filterOption={customFilter} onChange={handleTypeSelected} onMenuOpen={() => setTypeMenuOpen(true)} onMenuClose={() => setTypeMenuOpen(false)} onKeyDown={handleTypeKeyDown} className='w-48' placeholder='Select Per Type...' />
+            <WindowedSelect instanceId="pokemon-type" value={types.find(option => option.value === inputType) || null} options={types} windowThreshold={50} filterOption={customFilter} onChange={handleTypeSelected} onMenuOpen={() => setTypeMenuOpen(true)} onMenuClose={() => setTypeMenuOpen(false)} onKeyDown={handleTypeKeyDown} className='w-48' placeholder='Select Per Type...' />
             <button title='button' type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium text-sm p-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 rounded-r-full" onClick={handleType} disabled={isSearching} aria-busy={isLoadingType} aria-label="Search by type">
               {isLoadingType ? <Ring size={14} color="#eee" /> : <AiOutlineSearch />}
             </button>

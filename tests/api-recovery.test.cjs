@@ -23,6 +23,7 @@ function load(relative) {
     if (name === 'next/link') return { __esModule: true, default: ({ children }) => children };
     if (name === '../components/Grid') return { __esModule: true, default: ({ children }) => children };
     if (name === '../components/Pokemon') return { __esModule: true, default: MockPokemon };
+    if (name === 'next/dynamic') return { __esModule: true, default: () => MockPagination };
     if (name === 'react-responsive-pagination') return { __esModule: true, default: MockPagination };
     if (name === 'react-windowed-select') return { __esModule: true, default: MockSelect, createFilter: () => () => true };
     if (name === '../context/InputPokemon') return { InputContext: context };
@@ -41,7 +42,7 @@ const detail = { id: 1, name: 'charmander', types: [], sprites: { front_default:
 function goodApi(kind, url) {
   if (kind === 'names') return response({ results: [{ name: 'charmander' }] });
   if (url.includes('/type/')) return response({ pokemon: [{ pokemon: { url: 'https://example.test/pokemon/1' } }] });
-  if (url.includes('?offset=')) return response({ results: [{ url: 'https://example.test/pokemon/1' }] });
+  if (url.includes('?offset=')) return response({ count: 27, results: [{ url: 'https://example.test/pokemon/1' }] });
   return response(detail);
 }
 const failures = {
@@ -133,7 +134,7 @@ test('list ignores an old page response even when the API mock does not honor ca
     const changePage = tree.root.findByType(MockPagination).props.onPageChange;
     await act(async () => { changePage(2); });
     await act(async () => { changePage(3); });
-    await act(async () => { resolveOld(response({ results: [] })); });
+    await act(async () => { resolveOld(response({ count: 27, results: [] })); });
     assert.equal(tree.root.findByType(MockPagination).props.current, 3);
     assert.equal(tree.root.findAllByType(MockPokemon)[0].props.text, 'CHARMANDER');
   } finally {
