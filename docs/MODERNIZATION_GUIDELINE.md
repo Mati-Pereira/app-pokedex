@@ -23,7 +23,7 @@ Este guia registra o plano acordado para modernizar o projeto preservando sua es
 
 Não juntar atualização de framework, mudança de estilos e novas funcionalidades no mesmo commit. Uma unidade de atualização pode incluir pacotes que obrigatoriamente precisem mudar juntos para manter a compatibilidade. Se um passo se mostrar grande, dividi-lo em passos menores e explicar a divisão antes de prosseguir.
 
-Os commits serão locais na branch `analise-atualizacao`. Push, publicação e merge ficam fora deste plano até serem solicitados. Não reescrever os commits já existentes.
+Os próximos commits serão locais na branch `chore/continue-modernization`. Push, publicação e merge ficam fora deste plano até serem solicitados. Não reescrever os commits já existentes.
 
 ## Referência inicial
 
@@ -70,7 +70,7 @@ Cada item é um passo próprio, com um commit `fix:`. Melhorias adicionais, como
 
 ### 2. Estabelecer a referência de produção e instalação
 
-- [ ] Escolher e documentar um gerenciador de pacotes e seu lockfile. O repositório contém `package-lock.json` e `yarn.lock`; não atualizar ambos inadvertidamente.
+- [x] Padronizar em npm 10.9.4, usar `package-lock.json` e remover `yarn.lock`; documentar instalação e verificações.
 - [ ] Validar o build de produção e a execução desse build. Se houver defeitos, resolvê-los em passos específicos antes de concluir esta etapa.
 - [ ] Registrar limitações da geração das páginas de detalhes, que atualmente depende de requisições à PokéAPI durante o build.
 

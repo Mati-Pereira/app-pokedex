@@ -59,14 +59,28 @@ Go to the project directory
 Install dependencies
 
 ```bash
-  yarn
+  npm ci
 ```
 
 Run in dev mode
 
 ```bash
-  yarn dev
+  npm run dev
 ```
+
+## Validation and production
+
+Use npm 10.9.4 and commit changes to `package-lock.json`. The lockfile is the source of dependency versions; use `npm ci` for clean installations.
+
+```bash
+npm test
+npm run typecheck
+npm run lint
+npm run build
+npm start
+```
+
+The production server runs at http://localhost:3000. The build currently fetches the Pokemon catalog and pre-renders all detail pages using PokeAPI, so it requires network access and may take several minutes or fail if the API is unavailable. Client-side search and lists also require PokeAPI access.
 
 ## Tech Stack
 
