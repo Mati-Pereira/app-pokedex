@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { GetStaticPaths, GetStaticProps } from 'next';
 import { PokemonDetails } from '../types/pokemonDetails';
+const prerenderedPokemons = 50;
 interface DetailsProps {
   data: PokemonDetails;
 }
@@ -113,21 +114,25 @@ export const getStaticProps: GetStaticProps = async context => {
     props: {
       data,
     },
+    // Pokemon data rarely changes; refresh cached pages at most once a day.
+    revalidate: 60 * 60 * 24,
   };
 };
-export const getStaticPaths: GetStaticPaths = async ctx => {
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=0&limit=100000`);
-  const data = await res.json();
-  const results = data?.results;
-  const paths = results.map((p: { name: string }) => {
-    return {
-      params: {
-        slug: p.name,
-      },
-    };
-  });
-  return {
-    paths,
-    fallback: 'blocking',
-  };
+export const getStaticPaths: GetStaticPaths = async () => {
+  // Only the first Pokemon are pre-rendered; the rest are generated on first
+  // request (fallback: 'blocking') and then cached. If the API is unavailable
+  // at build time, the build still succeeds and every page is built on demand.
+  try {
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=0&limit=${prerenderedPokemons}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!Array.isArray(data?.results)) throw new Error('Invalid Pokemon list response');
+    const paths = data.results
+      .filter((p: { name?: unknown }) => typeof p?.name === 'string')
+      .map((p: { name: string }) => ({ params: { slug: p.name } }));
+    return { paths, fallback: 'blocking' };
+  } catch (error) {
+    console.warn('Skipping Pokemon pre-rendering:', error);
+    return { paths: [], fallback: 'blocking' };
+  }
 };

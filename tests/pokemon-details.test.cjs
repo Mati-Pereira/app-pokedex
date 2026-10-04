@@ -14,7 +14,7 @@ const page = new Module(filename, module);
 page.filename = filename;
 page.paths = Module._nodeModulePaths(path.dirname(filename));
 page._compile(compiled, filename);
-const { getStaticProps } = page.exports;
+const { getStaticProps, getStaticPaths } = page.exports;
 
 async function withFetch(mock, run) {
   const original = global.fetch;
@@ -56,7 +56,7 @@ test('valid details are preserved and the slug is URL encoded', async () => {
     assert.equal(url, 'https://pokeapi.co/api/v2/pokemon/bulbasaur%2Fextra');
     return { status: 200, ok: true, json: async () => data };
   }, async () => {
-    assert.deepEqual(await getStaticProps({ params: { slug: 'bulbasaur/extra' } }), { props: { data } });
+    assert.deepEqual(await getStaticProps({ params: { slug: 'bulbasaur/extra' } }), { props: { data }, revalidate: 86400 });
   });
 });
 
@@ -64,4 +64,32 @@ test('network failures remain observable', async () => {
   await withFetch(async () => { throw new Error('Network unavailable'); }, async () => {
     await assert.rejects(getStaticProps({ params: { slug: 'bulbasaur' } }), /Network unavailable/);
   });
+});
+
+test('getStaticPaths pre-renders only a small, bounded set of Pokemon', async () => {
+  await withFetch(async (url) => {
+    assert.match(url, /limit=50$/);
+    return { ok: true, status: 200, json: async () => ({ results: [{ name: 'bulbasaur' }, { name: 1 }, null] }) };
+  }, async () => {
+    assert.deepEqual(await getStaticPaths({}), {
+      paths: [{ params: { slug: 'bulbasaur' } }],
+      fallback: 'blocking',
+    });
+  });
+});
+
+test('getStaticPaths falls back to on-demand rendering when the API fails', async () => {
+  const warn = console.warn;
+  console.warn = () => {};
+  try {
+    for (const mock of [
+      async () => ({ ok: false, status: 503 }),
+      async () => ({ ok: true, status: 200, json: async () => ({}) }),
+      async () => { throw new Error('network down'); },
+    ]) {
+      await withFetch(mock, async () => {
+        assert.deepEqual(await getStaticPaths({}), { paths: [], fallback: 'blocking' });
+      });
+    }
+  } finally { console.warn = warn; }
 });
