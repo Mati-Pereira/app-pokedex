@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "node --test tests/*.test.cjs",
+    "test": "node --require ./tests/ts-register.cjs --test tests/*.test.cjs",
     "typecheck": "tsc --noEmit --incremental false"
   },
   "dependencies": {
