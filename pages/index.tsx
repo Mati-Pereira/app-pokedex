@@ -6,7 +6,8 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Grid from "../components/Grid";
 import Pokemon from "../components/Pokemon";
-import { PokemonDetails } from "../types/pokemonDetails";
+import type { PokemonListResponse } from "../types/pokeapi";
+import type { PokemonDetails } from "../types/pokemonDetails";
 
 const Pagination = dynamic(() => import("react-responsive-pagination"), { ssr: false });
 
@@ -36,12 +37,12 @@ const Index: NextPage = () => {
           { signal: controller.signal }
         );
         if (!res.ok) throw new Error(`Pokemon list request failed: HTTP ${res.status}`);
-        const data = await res.json();
+        const data = (await res.json()) as PokemonListResponse;
         if (!Number.isSafeInteger(data.count) || data.count < 0 || !Array.isArray(data.results)) throw new Error("Invalid Pokemon list response");
-        const results = await Promise.all(data.results.map(async (pokemon: { url: string }) => {
+        const results = await Promise.all(data.results.map(async pokemon => {
           const res = await fetch(pokemon.url, { signal: controller.signal });
           if (!res.ok) throw new Error(`Pokemon request failed: HTTP ${res.status}`);
-          const detail = await res.json();
+          const detail = (await res.json()) as PokemonDetails;
           if (!detail || typeof detail.name !== "string" || !detail.sprites || !Array.isArray(detail.types)) {
             throw new Error("Invalid Pokemon response");
           }

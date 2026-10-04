@@ -1,7 +1,7 @@
 export interface PokemonDetails {
   abilities: Ability2[];
   base_experience: number;
-  forms: Ability[];
+  forms: NamedAPIResource[];
   game_indices: Gameindex[];
   height: number;
   held_items: Helditem[];
@@ -11,8 +11,8 @@ export interface PokemonDetails {
   moves: Move[];
   name: string;
   order: number;
-  past_types: any[];
-  species: Ability;
+  past_types: PastType[];
+  species: NamedAPIResource;
   sprites: Sprites;
   stats: Stat[];
   types: Type[];
@@ -21,24 +21,24 @@ export interface PokemonDetails {
 
 export interface Type {
   slot: number;
-  type: Ability;
+  type: NamedAPIResource;
 }
 
 interface Stat {
   base_stat: number;
   effort: number;
-  stat: Ability;
+  stat: NamedAPIResource;
 }
 
 interface Sprites {
   back_default: string;
-  back_female?: any;
+  back_female?: string | null;
   back_shiny: string;
-  back_shiny_female?: any;
+  back_shiny_female?: string | null;
   front_default: string;
-  front_female?: any;
+  front_female?: string | null;
   front_shiny: string;
-  front_shiny_female?: any;
+  front_shiny_female?: string | null;
   other: Other;
   versions: Versions;
 }
@@ -75,13 +75,13 @@ interface Generationv {
 interface Blackwhite {
   animated: Diamondpearl;
   back_default: string;
-  back_female?: any;
+  back_female?: string | null;
   back_shiny: string;
-  back_shiny_female?: any;
+  back_shiny_female?: string | null;
   front_default: string;
-  front_female?: any;
+  front_female?: string | null;
   front_shiny: string;
-  front_shiny_female?: any;
+  front_shiny_female?: string | null;
 }
 
 interface Generationiv {
@@ -92,13 +92,13 @@ interface Generationiv {
 
 interface Diamondpearl {
   back_default: string;
-  back_female?: any;
+  back_female?: string | null;
   back_shiny: string;
-  back_shiny_female?: any;
+  back_shiny_female?: string | null;
   front_default: string;
-  front_female?: any;
+  front_female?: string | null;
   front_shiny: string;
-  front_shiny_female?: any;
+  front_shiny_female?: string | null;
 }
 
 interface Generationiii {
@@ -170,49 +170,54 @@ interface Officialartwork {
 
 interface Home {
   front_default: string;
-  front_female?: any;
+  front_female?: string | null;
   front_shiny: string;
-  front_shiny_female?: any;
+  front_shiny_female?: string | null;
 }
 
 interface Dreamworld {
   front_default: string;
-  front_female?: any;
+  front_female?: string | null;
 }
 
 interface Move {
-  move: Ability;
+  move: NamedAPIResource;
   version_group_details: Versiongroupdetail[];
 }
 
 interface Versiongroupdetail {
   level_learned_at: number;
-  move_learn_method: Ability;
-  version_group: Ability;
+  move_learn_method: NamedAPIResource;
+  version_group: NamedAPIResource;
 }
 
 interface Helditem {
-  item: Ability;
+  item: NamedAPIResource;
   version_details: Versiondetail[];
 }
 
 interface Versiondetail {
   rarity: number;
-  version: Ability;
+  version: NamedAPIResource;
 }
 
 interface Gameindex {
   game_index: number;
-  version: Ability;
+  version: NamedAPIResource;
 }
 
 interface Ability2 {
-  ability: Ability;
+  ability: NamedAPIResource;
   is_hidden: boolean;
   slot: number;
 }
 
-interface Ability {
+interface NamedAPIResource {
   name: string;
   url: string;
+}
+
+interface PastType {
+  generation: NamedAPIResource;
+  types: Type[];
 }
