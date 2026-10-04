@@ -3,13 +3,16 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { InputContext } from '../context/InputPokemon';
+import { useLanguage } from '../context/LanguageContext';
 import { fetchPokemonNames, usePokeApi } from '../lib/usePokeApi';
+import { localizedType, t } from '../lib/i18n';
 import types from '../data/types.json';
 import SearchField, { SelectOption } from './SearchField';
 import Toggle from './Toggle';
 
 function Navbar() {
   const { updateInput } = useContext(InputContext);
+  const { language, setLanguage } = useLanguage();
   const {
     data: pokemon,
     isLoading: namesLoading,
@@ -18,7 +21,7 @@ function Navbar() {
   } = usePokeApi(
     'names',
     signal => fetchPokemonNames('https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0', signal),
-    'Unable to load Pokemon names. Please try again.'
+    t(language, 'namesError')
   );
   const [inputName, setInputName] = useState('');
   const [inputType, setInputType] = useState('');
@@ -43,7 +46,7 @@ function Navbar() {
       await router.push(href);
     } catch (error) {
       if (!(error && typeof error === 'object' && 'cancelled' in error && error.cancelled)) {
-        setSearchError('Unable to open the search results. Please try again.');
+        setSearchError(t(language, 'searchError'));
       }
     } finally {
       navigationPending.current = false;
@@ -67,54 +70,78 @@ function Navbar() {
     label: name,
     value: name,
   }));
+  const typeOptions: SelectOption[] = types.map(({ value }) => ({
+    value,
+    label: localizedType(language, value),
+  }));
 
   return (
     <nav
-      className="flex border-gray-200 bg-white p-4 transition-colors dark:bg-gray-900 md:px-16"
+      aria-label={t(language, 'navigation')}
+      className="border-b border-slate-200 bg-white p-3 transition-colors dark:border-slate-700 dark:bg-gray-900 sm:p-4 md:px-8 xl:px-16"
       id="navbar"
     >
-      <div className="container mx-auto flex flex-col flex-wrap items-center justify-between gap-5 md:flex-row">
-        <Link href="/" className="flex items-center">
-          <span className="w-24 self-center">
-            <img src="pokedex-logo.png" alt="pokedex-logo" />
+      <div className="container mx-auto flex flex-col items-center justify-between gap-4 md:flex-row">
+        <Link href="/" className="flex min-h-12 items-center rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-700" aria-label={t(language, 'homeLink')}>
+          <span className="w-24 self-center sm:w-28">
+            <img src="pokedex-logo.png" alt="Pokédex" />
           </span>
         </Link>
-        <div className="flex flex-col gap-8 md:flex-row md:gap-16">
+        <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 md:max-w-2xl md:flex-1 md:gap-4">
           <SearchField
             instanceId="pokemon-name"
-            placeholder="Select Per Name..."
-            ariaLabel="Search by name"
+            placeholder={t(language, 'namePlaceholder')}
+            ariaLabel={t(language, 'nameField')}
             options={names}
             isLoadingOptions={namesLoading}
             canSearch={!!inputName}
             isSearching={isLoadingName}
             isDisabled={isSearching}
-            onSelect={option => setInputName(option.value)}
+            onSelect={option => setInputName(option?.value ?? '')}
             onSearch={handleName}
           />
           <SearchField
             instanceId="pokemon-type"
-            placeholder="Select Per Type..."
-            ariaLabel="Search by type"
-            options={types}
-            value={types.find(option => option.value === inputType) || null}
+            placeholder={t(language, 'typePlaceholder')}
+            ariaLabel={t(language, 'typeField')}
+            options={typeOptions}
+            value={typeOptions.find(option => option.value === inputType) || null}
             canSearch={!!inputType}
             isSearching={isLoadingType}
             isDisabled={isSearching}
-            onSelect={option => setInputType(option.label)}
+            onSelect={option => {
+              const nextType = option?.value ?? '';
+              setInputType(nextType);
+              if (!nextType && router.pathname === '/types') void router.push('/');
+            }}
             onSearch={handleType}
           />
         </div>
-        <Toggle />
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+            <span className="sr-only">{t(language, 'language')}</span>
+            <span aria-hidden="true">{language === 'pt-BR' ? 'PT' : 'EN'}</span>
+            <select
+              aria-label={t(language, 'language')}
+              value={language}
+              onChange={event => setLanguage(event.target.value === 'en' ? 'en' : 'pt-BR')}
+              className="min-h-11 rounded-lg border border-slate-400 bg-white px-2 text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 dark:border-slate-500 dark:bg-slate-800 dark:text-white"
+            >
+              <option value="pt-BR">{t(language, 'portuguese')}</option>
+              <option value="en">{t(language, 'english')}</option>
+            </select>
+          </label>
+          <Toggle />
+        </div>
         {namesError && (
           <div className="w-full">
             <p role="alert">{namesError}</p>
             <button type="button" className="btn mt-4" onClick={retryNames}>
-              Try again
+              {t(language, 'retry')}
             </button>
           </div>
         )}
-        {searchError && <p role="alert">{searchError}</p>}
+        {searchError && <p role="alert" className="w-full text-sm font-semibold text-red-800 dark:text-red-300">{searchError}</p>}
       </div>
     </nav>
   );

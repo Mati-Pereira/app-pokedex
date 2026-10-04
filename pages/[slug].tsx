@@ -1,98 +1,101 @@
 /* eslint-disable @next/next/no-img-element */
 import { GetStaticPaths, GetStaticProps } from 'next';
+import Link from 'next/link';
 import { pokeApiFetch } from '../lib/pokeapi';
 import { normalizePokemonDetails } from '../lib/pokemonDetails';
 import { PokemonDetails } from '../types/pokemonDetails';
+import { useLanguage } from '../context/LanguageContext';
+import { localizedStat, localizedType, t } from '../lib/i18n';
 const prerenderedPokemons = 50;
 interface DetailsProps {
   data: PokemonDetails;
 }
+
 function Details({ data }: DetailsProps) {
+  const { language } = useLanguage();
   return (
-    <>
-      <h1 className="flex w-full justify-center py-10 text-4xl font-bold text-slate-800 dark:text-white">
+    <main className="mx-auto min-h-[calc(100vh-5rem)] max-w-6xl px-4 py-5 text-slate-800 dark:text-slate-100 sm:px-6 sm:py-8">
+      <Link href="/" className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 font-semibold text-blue-800 hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 dark:text-blue-200 dark:hover:bg-slate-700">
+        <span aria-hidden="true">←</span> {t(language, 'detailsBack')}
+      </Link>
+      <h1 className="py-5 text-center text-3xl font-extrabold tracking-wide text-slate-900 dark:text-white sm:py-8 sm:text-4xl">
         {data.name.toUpperCase()}
       </h1>
-      <div className="flex flex-col md:flex-row">
-        <div className="flex w-full flex-col items-center justify-center bg-slate-100 px-12 dark:bg-slate-800 dark:text-gray-100 md:w-1/2">
-          <div className="carousel w-full bg-slate-100 dark:bg-slate-800">
-            <div id="item1" className="carousel-item w-full">
-              <img src={data.sprites.front_default ?? undefined} className="w-full" alt="pokemon" />
+      <div className="grid gap-5 md:grid-cols-2 md:gap-8">
+        <section aria-label={t(language, 'gallery', { name: data.name })} className="rounded-2xl border border-slate-200 bg-white p-3 shadow-md dark:border-slate-600 dark:bg-slate-900 sm:p-5">
+          <div className="carousel w-full rounded-xl bg-sky-900">
+            <div id="item1" className="carousel-item aspect-square w-full items-center justify-center">
+              <img src={data.sprites.front_default ?? undefined} className="h-full w-full object-contain [image-rendering:pixelated]" alt={t(language, 'frontAlt', { name: data.name })} />
             </div>
-            <div id="item2" className="carousel-item w-full">
-              <img src={data.sprites.back_default ?? undefined} className="w-full" alt="pokemon" />
+            <div id="item2" className="carousel-item aspect-square w-full items-center justify-center">
+              <img src={data.sprites.back_default ?? undefined} className="h-full w-full object-contain [image-rendering:pixelated]" alt={t(language, 'backAlt', { name: data.name })} />
             </div>
-            <div id="item3" className="carousel-item w-full">
-              <img src={data.sprites.front_shiny ?? undefined} className="w-full" alt="pokemon" />
+            <div id="item3" className="carousel-item aspect-square w-full items-center justify-center">
+              <img src={data.sprites.front_shiny ?? undefined} className="h-full w-full object-contain [image-rendering:pixelated]" alt={t(language, 'shinyFrontAlt', { name: data.name })} />
             </div>
-            <div id="item4" className="carousel-item w-full">
-              <img src={data.sprites.back_shiny ?? undefined} className="w-full" alt="pokemon" />
+            <div id="item4" className="carousel-item aspect-square w-full items-center justify-center">
+              <img src={data.sprites.back_shiny ?? undefined} className="h-full w-full object-contain [image-rendering:pixelated]" alt={t(language, 'shinyBackAlt', { name: data.name })} />
             </div>
           </div>
-          <div className="grid w-full grid-cols-2 gap-2 py-2 md:grid-cols-4">
-            <a
-              href="#item1"
-              className="btn-xs btn h-full border-none bg-slate-300 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-300"
-              title="pokemon"
-            >
-              <img src={data.sprites.front_default ?? undefined} alt="front" />
-            </a>
-            <a
-              href="#item2"
-              className="btn-xs btn h-full border-none bg-slate-300 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-300"
-              title="pokemon"
-            >
-              <img src={data.sprites.back_default ?? undefined} alt="back" />
-            </a>
-            <a
-              href="#item3"
-              className="btn-xs btn h-full border-none bg-slate-300 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-300"
-              title="pokemon"
-            >
-              <img src={data.sprites.front_shiny ?? undefined} alt="front_shiny" />
-            </a>
-            <a
-              href="#item4"
-              className="btn-xs btn h-full border-none bg-slate-300 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-300"
-              title="pokemon"
-            >
-              <img src={data.sprites.back_shiny ?? undefined} alt="back_shiny" />
-            </a>
-          </div>
-        </div>
-        <div className="flex w-full flex-col items-center justify-center gap-6 px-12 md:w-1/2">
-          <div className="py-10 text-center">
-            <h2 className="mb-5 text-2xl font-semibold text-slate-800 dark:text-white">
-              Abilities
-            </h2>
-            <div className="flex gap-3">
-              {data.abilities.map((ability, i) => (
-                <span
-                  key={i}
-                  className="my-5 overflow-hidden rounded-full bg-gray-200 px-5 py-3 text-slate-800 shadow-lg dark:bg-sky-900 dark:text-white"
-                >
-                  {ability.ability.name}
+          <nav aria-label={t(language, 'chooseImage')} className="grid grid-cols-2 gap-2 pt-3 sm:grid-cols-4">
+            {[
+              { id: 'item1', src: data.sprites.front_default, label: t(language, 'frontSprite') },
+              { id: 'item2', src: data.sprites.back_default, label: t(language, 'backSprite') },
+              { id: 'item3', src: data.sprites.front_shiny, label: t(language, 'shinyFrontSprite') },
+              { id: 'item4', src: data.sprites.back_shiny, label: t(language, 'shinyBackSprite') },
+            ].map(sprite => (
+              <a key={sprite.id} href={`#${sprite.id}`} aria-label={sprite.label} title={sprite.label} className="flex min-h-16 items-center justify-center rounded-lg border border-slate-300 bg-slate-100 p-2 hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 dark:border-slate-600 dark:bg-slate-700 dark:hover:bg-slate-600">
+                <img src={sprite.src ?? undefined} alt="" aria-hidden="true" className="h-12 w-12 object-contain [image-rendering:pixelated]" />
+              </a>
+            ))}
+          </nav>
+        </section>
+
+        <div className="flex flex-col gap-5">
+          <section aria-labelledby="types-heading" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-600 dark:bg-slate-900">
+            <h2 id="types-heading" className="mb-3 text-xl font-bold">{t(language, 'types')}</h2>
+            <div className="flex flex-wrap gap-2">
+              {data.types.map(type => (
+                <span key={type.type.name} className="rounded-full bg-slate-200 px-3 py-1 text-sm font-semibold text-slate-800 dark:bg-slate-700 dark:text-slate-100">
+                  {localizedType(language, type.type.name)}
                 </span>
               ))}
             </div>
-          </div>
-          <table className="flex w-fit flex-col justify-around pb-10">
-            <tbody className="flex flex-col justify-evenly border-slate-800 bg-slate-100 dark:border-slate-100 dark:bg-slate-800">
-              {data.stats.map(stat => (
-                <tr key={stat.stat.name}>
-                  <td className="mb-10 w-36 whitespace-nowrap border-b border-slate-600 px-6 py-4 text-sm font-medium text-slate-800 dark:text-white md:w-40 lg:w-48">
-                    {stat.stat.name}
-                  </td>
-                  <td className="mb-10 w-32 whitespace-nowrap border-b border-slate-600 px-6 py-4 text-center text-sm font-light text-slate-800 dark:text-white md:w-36 lg:w-48">
-                    {stat.base_stat}
-                  </td>
-                </tr>
+          </section>
+
+          <section aria-labelledby="abilities-heading" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-600 dark:bg-slate-900">
+            <h2 id="abilities-heading" className="mb-3 text-xl font-bold">{t(language, 'abilities')}</h2>
+            <ul className="flex flex-wrap gap-2">
+              {data.abilities.map(ability => (
+                <li key={ability.ability.name} className="rounded-full bg-blue-100 px-4 py-2 font-semibold text-blue-950 dark:bg-sky-900 dark:text-white">
+                  {ability.ability.name.replaceAll('-', ' ')}
+                </li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+          </section>
+
+          <section aria-labelledby="stats-heading" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-600 dark:bg-slate-900">
+            <h2 id="stats-heading" className="mb-4 text-xl font-bold">{t(language, 'stats')}</h2>
+            <ul className="space-y-4">
+              {data.stats.map(stat => {
+                const label = localizedStat(language, stat.stat.name);
+                const percentage = Math.min(100, (stat.base_stat / 255) * 100);
+                return (
+                  <li key={stat.stat.name}>
+                    <div className="mb-1 flex justify-between gap-3 text-sm font-semibold">
+                      <span>{label}</span><span>{stat.base_stat}</span>
+                    </div>
+                    <div role="meter" aria-label={label} aria-valuemin={0} aria-valuemax={255} aria-valuenow={stat.base_stat} className="h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                      <div aria-hidden="true" className="h-full rounded-full bg-blue-700 dark:bg-sky-400" style={{ width: `${percentage}%` }} />
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
         </div>
       </div>
-    </>
+    </main>
   );
 }
 export default Details;

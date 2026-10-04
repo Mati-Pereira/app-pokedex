@@ -4,10 +4,21 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { ContextInput } from '../context/InputPokemon';
+import { LanguageProvider, useLanguage } from '../context/LanguageContext';
+import { t } from '../lib/i18n';
 import '../styles/globals.css';
 
+function RouteLoading() {
+  const { language } = useLanguage();
+  return (
+    <div role="status" aria-live="polite" className="fixed inset-0 z-50 flex cursor-wait flex-col items-center justify-center gap-4 bg-slate-100/95 dark:bg-slate-800/95 dark:text-slate-50">
+      <div aria-hidden="true"><Waveform size={60} color="#3d3e7c" /></div>
+      <p>{t(language, 'loadingPage')}</p>
+    </div>
+  );
+}
+
 export default function App({ Component, pageProps }: AppProps) {
-  const [isLoading, setIsLoading] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const router = useRouter();
 
@@ -25,35 +36,13 @@ export default function App({ Component, pageProps }: AppProps) {
       router.events.off('routeChangeError', finish);
     };
   }, [router.events]);
-  useEffect(() => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-  }, []);
-
   return (
-    <ContextInput>
-      <Navbar />
-      {isLoading ? (
-        <div className="flex h-screen w-full items-center justify-center bg-slate-100 dark:bg-slate-800">
-          <Waveform size={60} color="#3d3e7c" />
-        </div>
-      ) : (
+    <LanguageProvider>
+      <ContextInput>
+        <Navbar />
         <Component {...pageProps} />
-      )}
-      {isNavigating && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="fixed inset-0 z-50 flex cursor-wait flex-col items-center justify-center gap-4 bg-slate-100 dark:bg-slate-800 dark:text-slate-50"
-        >
-          <div aria-hidden="true">
-            <Waveform size={60} color="#3d3e7c" />
-          </div>
-          <p>Loading...</p>
-        </div>
-      )}
-    </ContextInput>
+        {isNavigating && <RouteLoading />}
+      </ContextInput>
+    </LanguageProvider>
   );
 }

@@ -11,7 +11,8 @@
 
 body {
   min-height: 100vh;
-  @apply bg-slate-100 dark:bg-slate-800;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  @apply text-slate-900 antialiased bg-slate-100 dark:bg-slate-800 dark:text-slate-100;
 }
 
 .pagination {
@@ -24,29 +25,45 @@ body {
   position: relative;
   display: block;
   margin: 0px;
-  min-height: 40px;
-  min-width: 40px;
+  min-height: 44px;
+  min-width: 44px;
   border-radius: 20px;
   text-align: center;
   line-height: 40px;
-  color: #007bff;
+  color: #1e293b;
   text-decoration: none;
 }
 
 .page-item a.page-link:hover {
-  background-color: #cccccc;
+  background-color: #dbeafe;
+}
+
+.page-item a.page-link:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
 }
 
 .page-item.active .page-link {
   font-weight: 700;
   color: #ffffff;
-  background-color: #007bff;
+  background-color: #1e40af;
 }
 
 .page-item.disabled .page-link {
-  color: #6c757d;
+  color: #475569;
   pointer-events: none;
   cursor: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .sr-only {

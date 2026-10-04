@@ -36,7 +36,12 @@ function MockSelect(props) {
         else props.onMenuOpen();
         setMenuOpen(!menuOpen);
       },
-    }, menuOpen ? 'Close options' : 'Open options'));
+      }, menuOpen ? 'Close options' : 'Open options'),
+    selected && React.createElement('button', {
+      type: 'button',
+      'aria-label': `Limpar ${props.instanceId}`,
+      onClick: () => { setLocalValue(''); props.onChange(null); },
+    }, 'Limpar seleção'));
 }
 function load(relative) {
   const filename = path.resolve(__dirname, '..', relative);
@@ -80,7 +85,7 @@ for (const [index, label, first, second, expected] of [
     try {
       view = render(React.createElement(Navbar));
       const input = screen.getByTestId(index === 0 ? 'pokemon-name' : 'pokemon-type');
-      const button = () => screen.getByRole('button', { name: index === 0 ? 'Search by name' : 'Search by type' });
+      const button = () => screen.getByRole('button', { name: index === 0 ? 'Buscar: nome do Pokémon' : 'Buscar: tipo do Pokémon' });
 
       assert.equal(press(input, 'Enter').defaultPrevented, false);
       fireEvent.click(button());
@@ -128,7 +133,7 @@ for (const [index, label] of [[0, 'name'], [1, 'type']]) {
       try {
         view = render(React.createElement(Navbar));
         const inputs = [screen.getByTestId('pokemon-name'), screen.getByTestId('pokemon-type')];
-        const buttons = [screen.getByRole('button', { name: 'Search by name' }), screen.getByRole('button', { name: 'Search by type' })];
+        const buttons = [screen.getByRole('button', { name: 'Buscar: nome do Pokémon' }), screen.getByRole('button', { name: 'Buscar: tipo do Pokémon' })];
         fireEvent.change(inputs[0], { target: { value: 'pikachu' } });
         fireEvent.change(inputs[1], { target: { value: 'fire' } });
         fireEvent.click(buttons[index]);
@@ -182,12 +187,40 @@ test('type selection follows URL changes and submits the restored value', async 
     router.query = { type: 'water' };
     view.rerender(React.createElement(Navbar));
     await waitFor(() => assert.equal(input.value, 'water'));
-    fireEvent.click(screen.getByRole('button', { name: 'Search by type' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Buscar: tipo do Pokémon' }));
     await waitFor(() => assert.deepEqual(navigations, ['/types?type=water']));
     assert.deepEqual(navigations, ['/types?type=water']);
     router.query = { type: 'unknown' };
     view.rerender(React.createElement(Navbar));
     await waitFor(() => assert.equal(input.value, ''));
+  } finally {
+    if (view) view.unmount();
+    router.pathname = '/';
+    router.query = {};
+    global.fetch = originalFetch;
+  }
+});
+
+test('clearing a selected name disables its search and clearing a type returns to the catalog', async () => {
+  const originalFetch = global.fetch;
+  global.fetch = async () => ({ ok: true, json: async () => ({ results: [] }) });
+  router.pathname = '/types';
+  router.query = { type: 'fire' };
+  navigations.length = 0;
+  let view;
+  try {
+    view = render(React.createElement(Navbar));
+    await waitFor(() => assert.equal(screen.getByTestId('pokemon-type').value, 'fire'));
+    fireEvent.click(screen.getByRole('button', { name: 'Limpar pokemon-type' }));
+    await waitFor(() => assert.deepEqual(navigations, ['/']));
+
+    const nameInput = screen.getByTestId('pokemon-name');
+    fireEvent.change(nameInput, { target: { value: 'pikachu' } });
+    const nameSearch = screen.getByRole('button', { name: 'Buscar: nome do Pokémon' });
+    assert.equal(nameSearch.disabled, false);
+    fireEvent.click(screen.getByRole('button', { name: 'Limpar pokemon-name' }));
+    await waitFor(() => assert.equal(nameSearch.disabled, true));
+    assert.equal(nameInput.value, '');
   } finally {
     if (view) view.unmount();
     router.pathname = '/';

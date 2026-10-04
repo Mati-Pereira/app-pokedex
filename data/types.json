@@ -1,74 +1,74 @@
 [
   {
-    "label": "normal",
+    "label": "Normal",
     "value": "normal"
   },
   {
-    "label": "fighting",
+    "label": "Lutador",
     "value": "fighting"
   },
   {
-    "label": "flying",
+    "label": "Voador",
     "value": "flying"
   },
   {
-    "label": "poison",
+    "label": "Veneno",
     "value": "poison"
   },
   {
-    "label": "ground",
+    "label": "Terrestre",
     "value": "ground"
   },
   {
-    "label": "rock",
+    "label": "Pedra",
     "value": "rock"
   },
   {
-    "label": "bug",
+    "label": "Inseto",
     "value": "bug"
   },
   {
-    "label": "ghost",
+    "label": "Fantasma",
     "value": "ghost"
   },
   {
-    "label": "steel",
+    "label": "Aço",
     "value": "steel"
   },
   {
-    "label": "fire",
+    "label": "Fogo",
     "value": "fire"
   },
   {
-    "label": "water",
+    "label": "Água",
     "value": "water"
   },
   {
-    "label": "grass",
+    "label": "Grama",
     "value": "grass"
   },
   {
-    "label": "electric",
+    "label": "Elétrico",
     "value": "electric"
   },
   {
-    "label": "psychic",
+    "label": "Psíquico",
     "value": "psychic"
   },
   {
-    "label": "ice",
+    "label": "Gelo",
     "value": "ice"
   },
   {
-    "label": "dragon",
+    "label": "Dragão",
     "value": "dragon"
   },
   {
-    "label": "dark",
+    "label": "Sombrio",
     "value": "dark"
   },
   {
-    "label": "fairy",
+    "label": "Fada",
     "value": "fairy"
   }
 ]

@@ -83,7 +83,7 @@ for (const kind of ['list', 'type', 'names']) {
         assert.equal(screen.queryByTestId('loader'), null);
         if (kind === 'names') assert.equal(screen.getByTestId('select-pokemon-name').dataset.loading, 'false');
         failing = false;
-        fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
         await waitFor(() => assert.equal(screen.queryByRole('alert'), null));
         if (kind === 'names') {
           assert.equal(screen.getByTestId('select-pokemon-name').dataset.optionCount, '1');

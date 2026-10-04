@@ -41,7 +41,7 @@ test('toggle reads the applied theme and switches even if storage cannot be writ
   global.localStorage = { setItem: (name, value) => { assert.equal(name, 'theme'); saved = value; } };
   try {
     render(React.createElement(Toggle));
-    const toggle = screen.getByRole('button', { name: 'Color mode switch button' });
+    const toggle = screen.getByRole('button', { name: 'Alternar tema de cores' });
     fireEvent.click(toggle);
     assert.equal(global.document.documentElement.classList.contains('dark'), false);
     assert.equal(saved, 'light');
