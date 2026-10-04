@@ -124,27 +124,27 @@ function SearchField({
         }}
         components={{ MenuList: VirtualizedMenuList }}
         styles={{
-          menu: base => ({ ...base, backgroundColor: '#fff' }),
+          menu: base => ({ ...base, backgroundColor: 'var(--select-surface)' }),
           control: (base, state) => ({
             ...base,
             minHeight: 48,
-            borderColor: state.isFocused ? '#1d4ed8' : '#94a3b8',
-            boxShadow: state.isFocused ? '0 0 0 2px #93c5fd' : 'none',
-            '&:hover': { borderColor: '#1d4ed8' },
+            borderColor: state.isFocused ? 'var(--select-focus)' : 'var(--select-border)',
+            boxShadow: state.isFocused ? '0 0 0 2px var(--select-focus-ring)' : 'none',
+            '&:hover': { borderColor: 'var(--select-focus)' },
           }),
-          input: base => ({ ...base, color: '#0f172a' }),
-          placeholder: base => ({ ...base, color: '#475569' }),
-          singleValue: base => ({ ...base, color: '#0f172a' }),
-          loadingMessage: base => ({ ...base, color: '#475569' }),
-          noOptionsMessage: base => ({ ...base, color: '#475569' }),
+          input: base => ({ ...base, color: 'var(--select-text)' }),
+          placeholder: base => ({ ...base, color: 'var(--select-muted)' }),
+          singleValue: base => ({ ...base, color: 'var(--select-text)' }),
+          loadingMessage: base => ({ ...base, color: 'var(--select-muted)' }),
+          noOptionsMessage: base => ({ ...base, color: 'var(--select-muted)' }),
           menuList: base => ({ ...base, overflowY: 'hidden' } as typeof base),
           option: (base, state) => ({
             ...base,
             backgroundColor: state.isSelected
-              ? '#2563eb'
+              ? 'var(--select-selected)'
               : state.isFocused
-                ? '#dbeafe'
-                : '#fff',
+                ? 'var(--select-option-focus)'
+                : 'var(--select-surface)',
             color: state.isSelected ? '#fff' : '#1e293b',
             cursor: 'pointer',
           }),
@@ -158,7 +158,7 @@ function SearchField({
       />
       <button
         type="button"
-        className="min-h-12 min-w-12 rounded-r-full bg-blue-800 p-3 text-center text-sm font-medium text-white hover:bg-blue-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+        className="min-h-12 min-w-12 rounded-r-full bg-pokedex p-3 text-center text-sm font-medium text-white hover:bg-pokedex-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pokedex dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus-visible:outline-blue-700"
         onClick={onSearch}
         disabled={isDisabled || !canSearch}
         aria-busy={isSearching}
