@@ -2,6 +2,8 @@
 
 import { Type } from "../types/pokemonDetails";
 import Types from "./Types";
+import { useLanguage } from "../context/LanguageContext";
+import { t } from "../lib/i18n";
 
 interface PokemonProps {
   image: string;
@@ -10,18 +12,21 @@ interface PokemonProps {
 }
 
 function Pokemon({ image, text, types }: PokemonProps) {
+  const { language } = useLanguage();
   return (
-    <div className="rounded bg-gray-200 overflow-hidden shadow-lg dark:bg-sky-900">
-      <img className="w-full" src={image} alt={text} />
-      <div className="px-6 py-4 ">
-        <div className="font-bold text-xl mb-2">{text}</div>
-        <div className="flex">
+    <article className="h-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md transition duration-200 hover:-translate-y-1 hover:shadow-xl dark:border-slate-600 dark:bg-sky-950">
+      <div className="aspect-square bg-sky-900 p-3 sm:p-5">
+        <img className="h-full w-full object-contain [image-rendering:pixelated]" src={image} alt={t(language, 'cardSprite', { name: text })} loading="lazy" />
+      </div>
+      <div className="px-4 py-4 sm:px-5">
+        <h2 className="mb-3 text-lg font-extrabold tracking-wide text-slate-900 dark:text-white sm:text-xl">{text}</h2>
+        <div className="flex flex-wrap gap-1">
           {types.map(type => (
             <Types key={type.type.name} pokemonType={type.type.name} />
           ))}
         </div>
       </div>
-    </div>
+    </article>
   );
 }
 

@@ -37,7 +37,7 @@ test('navigation shows immediate feedback, preserves the page, and clears on com
     await screen.findByText('Current page');
     for (const end of ['routeChangeComplete', 'routeChangeError']) {
       act(() => listeners.get('routeChangeStart')('/pikachu', { shallow: false }));
-      assert.equal(screen.getByRole('status').textContent, 'Loading...');
+      assert.equal(screen.getByRole('status').textContent, 'Carregando página...');
       assert.ok(screen.getByText('Current page'));
       act(() => listeners.get(end)(...(end === 'routeChangeError' ? [new Error('Cancelled')] : [])));
       assert.equal(screen.queryByRole('status'), null);

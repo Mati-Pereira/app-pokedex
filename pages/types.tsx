@@ -9,6 +9,8 @@ import { fetchPokemonDetails, fetchTypeMembers, usePokeApi } from '../lib/usePok
 import type { PokemonDetails } from '../types/pokemonDetails';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
+import { useLanguage } from '../context/LanguageContext';
+import { localizedType, t } from '../lib/i18n';
 
 const Pagination = dynamic(() => import('react-responsive-pagination'), { ssr: false });
 
@@ -16,6 +18,7 @@ const pokemonsPerPage = 9;
 
 const Types = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const { language } = useLanguage();
   const router = useRouter();
   const queryType = router.query['type'];
   const type =
@@ -36,7 +39,7 @@ const Types = () => {
       );
       return fetchPokemonDetails(members, signal);
     },
-    'Unable to load Pokemon for this type. Please try again.'
+    t(language, 'typeError')
   );
   const isLoading = !router.isReady || isFetching;
   const allPokemons = data ?? [];
@@ -53,44 +56,44 @@ const Types = () => {
   const handlePageChange = (page: number) => setCurrentPage(page);
   if (isLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-100 dark:bg-slate-800">
+      <div role="status" aria-live="polite" className="flex min-h-[50vh] w-full flex-col items-center justify-center gap-4 bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-white">
         <Waveform size={60} color="#3d3e7c" />
+        <p>{t(language, 'loadingPokemons')}</p>
       </div>
     );
   }
   if (error) {
     return (
-      <div className="bg-slate-100 px-6 py-8 dark:bg-slate-800 dark:text-slate-50">
+      <main className="min-h-[50vh] bg-slate-100 px-6 py-8 text-slate-800 dark:bg-slate-800 dark:text-slate-50">
         <p role="alert">{error}</p>
-        <button type="button" className="btn mt-4" onClick={retry}>
-          Try again
+        <button type="button" className="btn mt-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" onClick={retry}>
+          {t(language, 'retry')}
         </button>
-      </div>
+      </main>
     );
   }
   if (!allPokemons.length) {
     return (
-      <div className="bg-gray-200 text-slate-800 dark:bg-slate-800 dark:text-white">
-        <div className="flex min-h-[calc(100vh-73px)] flex-col items-center justify-center gap-10 text-center">
-          <img src="sadPokemon1.png" alt="Pokemon Sad Png @clipartmax.com" className="w-72" />
-          <div className="mt-4 flex flex-col gap-6 tracking-widest">
-            <span className="block text-6xl">
-              <span>4 0 4</span>
-            </span>
-            <span className="text-xl">
-              Sorry, We couldn{"'"}t the pokemon that you are looking for!
-            </span>
-          </div>
-        </div>
-      </div>
+      <main className="flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center gap-5 bg-slate-100 px-5 py-10 text-center text-slate-800 dark:bg-slate-800 dark:text-white">
+        <img src="sadPokemon1.png" alt="" aria-hidden="true" className="w-48 sm:w-60" />
+        <h1 className="text-2xl font-bold sm:text-3xl">{t(language, 'emptyTitle')}</h1>
+        <p>{t(language, 'emptyType')}</p>
+        <Link href="/" className="btn min-h-11 bg-blue-800 text-white hover:bg-blue-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">
+          {t(language, 'allPokemons')}
+        </Link>
+      </main>
     );
   }
 
   return (
-    <div className="bg-slate-100 px-6 py-8 shadow-xl ring-1 ring-slate-900/5 dark:bg-slate-800 dark:text-slate-50">
+    <main className="min-h-[calc(100vh-5rem)] bg-slate-100 px-2 py-4 text-slate-800 shadow-xl ring-1 ring-slate-900/5 dark:bg-slate-800 dark:text-slate-50 sm:px-4 sm:py-6">
+      <h1 className="px-2 text-xl font-extrabold text-slate-900 dark:text-white">{t(language, 'typeHeading', { type: localizedType(language, type) })}</h1>
+      <p className="px-2 pt-1 text-sm text-slate-600 dark:text-slate-300" aria-live="polite">
+        {t(language, 'showing', { start: (currentPage - 1) * pokemonsPerPage + 1, end: Math.min(currentPage * pokemonsPerPage, allPokemons.length), total: allPokemons.length })}
+      </p>
       <Grid>
         {pagePokemons?.map((pokemon: PokemonDetails) => (
-          <Link href={`/${pokemon.name}`} key={pokemon.id}>
+          <Link href={`/${pokemon.name}`} key={pokemon.id} aria-label={t(language, 'viewDetails', { name: pokemon.name })} className="rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-700">
             <Pokemon
               image={pokemon.sprites.front_default ?? ''}
               text={pokemon.name.toUpperCase()}
@@ -99,10 +102,20 @@ const Types = () => {
           </Link>
         ))}
       </Grid>
-      <div className="w-100 mx-auto">
-        <Pagination current={currentPage} total={pageCount} onPageChange={handlePageChange} />
-      </div>
-    </div>
+      <nav className="mx-auto max-w-xl px-2 py-5" aria-label={t(language, 'resultsPagination')}>
+        <Pagination
+          current={currentPage}
+          total={pageCount}
+          onPageChange={handlePageChange}
+          previousLabel="‹"
+          nextLabel="›"
+          ariaPreviousLabel={t(language, 'previousPage')}
+          ariaNextLabel={t(language, 'nextPage')}
+          ariaPageLabel={(page, active) => active ? t(language, 'currentPage', { page }) : t(language, 'goToPage', { page })}
+        />
+        {pageCount > 0 && <p className="mt-2 text-center text-sm text-slate-600 dark:text-slate-300">{t(language, 'pageOf', { current: currentPage, total: pageCount })}</p>}
+      </nav>
+    </main>
   );
 };
 

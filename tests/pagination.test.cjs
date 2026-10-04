@@ -95,7 +95,7 @@ test('invalid API counts show the recoverable error instead of incorrect paginat
     await setup(count, async () => {
       await waitFor(() => assert.ok(screen.getByRole('alert')));
       assert.equal(screen.queryByTestId('pagination'), null);
-      assert.ok(screen.getByRole('button', { name: 'Try again' }));
+      assert.ok(screen.getByRole('button', { name: 'Tentar novamente' }));
     });
   }
 });

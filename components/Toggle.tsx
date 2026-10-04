@@ -1,4 +1,8 @@
+import { useLanguage } from '../context/LanguageContext';
+import { t } from '../lib/i18n';
+
 const Toggle = () => {
+  const { language } = useLanguage();
   const toggleMode = () => {
     const isDark = !document.documentElement.classList.contains('dark');
     document.documentElement.classList.toggle('dark', isDark);
@@ -10,12 +14,12 @@ const Toggle = () => {
   };
   return (
     <>
-      <button type="button" className='w-10 h-10 focus:outline-hidden' onClick={toggleMode}>
-        <span className='sr-only'>Color mode switch button</span>
+      <button type="button" aria-label={t(language, 'theme')} title={t(language, 'theme')} className="min-h-11 min-w-11 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" onClick={toggleMode}>
 
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="hidden dark:block h-10 w-10 text-indigo-200"
+          aria-hidden="true"
+          className="hidden h-10 w-10 text-indigo-200 dark:block"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -30,7 +34,8 @@ const Toggle = () => {
 
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="block dark:hidden h-10 w-10 text-gray-900"
+          aria-hidden="true"
+          className="block h-10 w-10 text-gray-900 dark:hidden"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
