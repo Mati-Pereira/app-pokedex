@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { GetStaticPaths, GetStaticProps } from 'next';
 import { pokeApiFetch } from '../lib/pokeapi';
+import { normalizePokemonDetails } from '../lib/pokemonDetails';
 import { PokemonDetails } from '../types/pokemonDetails';
 const prerenderedPokemons = 50;
 interface DetailsProps {
@@ -16,16 +17,16 @@ function Details({ data }: DetailsProps) {
         <div className="flex w-full flex-col items-center justify-center bg-slate-100 px-12 dark:bg-slate-800 dark:text-gray-100 md:w-1/2">
           <div className="carousel w-full bg-slate-100 dark:bg-slate-800">
             <div id="item1" className="carousel-item w-full">
-              <img src={data.sprites.front_default} className="w-full" alt="pokemon" />
+              <img src={data.sprites.front_default ?? undefined} className="w-full" alt="pokemon" />
             </div>
             <div id="item2" className="carousel-item w-full">
-              <img src={data.sprites.back_default} className="w-full" alt="pokemon" />
+              <img src={data.sprites.back_default ?? undefined} className="w-full" alt="pokemon" />
             </div>
             <div id="item3" className="carousel-item w-full">
-              <img src={data.sprites.front_shiny} className="w-full" alt="pokemon" />
+              <img src={data.sprites.front_shiny ?? undefined} className="w-full" alt="pokemon" />
             </div>
             <div id="item4" className="carousel-item w-full">
-              <img src={data.sprites.back_shiny} className="w-full" alt="pokemon" />
+              <img src={data.sprites.back_shiny ?? undefined} className="w-full" alt="pokemon" />
             </div>
           </div>
           <div className="grid w-full grid-cols-2 gap-2 py-2 md:grid-cols-4">
@@ -34,28 +35,28 @@ function Details({ data }: DetailsProps) {
               className="btn-xs btn h-full border-none bg-slate-300 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-300"
               title="pokemon"
             >
-              <img src={data.sprites.front_default} alt="front" />
+              <img src={data.sprites.front_default ?? undefined} alt="front" />
             </a>
             <a
               href="#item2"
               className="btn-xs btn h-full border-none bg-slate-300 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-300"
               title="pokemon"
             >
-              <img src={data.sprites.back_default} alt="back" />
+              <img src={data.sprites.back_default ?? undefined} alt="back" />
             </a>
             <a
               href="#item3"
               className="btn-xs btn h-full border-none bg-slate-300 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-300"
               title="pokemon"
             >
-              <img src={data.sprites.front_shiny} alt="front_shiny" />
+              <img src={data.sprites.front_shiny ?? undefined} alt="front_shiny" />
             </a>
             <a
               href="#item4"
               className="btn-xs btn h-full border-none bg-slate-300 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-300"
               title="pokemon"
             >
-              <img src={data.sprites.back_shiny} alt="back_shiny" />
+              <img src={data.sprites.back_shiny ?? undefined} alt="back_shiny" />
             </a>
           </div>
         </div>
@@ -111,9 +112,10 @@ export const getStaticProps: GetStaticProps = async context => {
   if (!data || typeof data.name !== 'string') {
     throw new Error('Invalid Pokemon details response');
   }
+  const details = normalizePokemonDetails(data);
   return {
     props: {
-      data,
+      data: details,
     },
     // Pokemon data rarely changes; refresh cached pages at most once a day.
     revalidate: 60 * 60 * 24,
