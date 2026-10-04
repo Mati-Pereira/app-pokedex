@@ -4,6 +4,7 @@ import {
   isValidElement,
   KeyboardEvent,
   ReactNode,
+  WheelEvent as ReactWheelEvent,
   useEffect,
   useRef,
   useState,
@@ -55,6 +56,16 @@ function VirtualizedMenuList(props: MenuListProps<SelectOption, false>) {
   );
   const listRef = useRef<ListImperativeAPI | null>(null);
 
+  const handleWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
+    const list = listRef.current?.element;
+    if (!list || event.deltaY === 0) return;
+
+    event.preventDefault();
+    const deltaMultiplier =
+      event.deltaMode === 1 ? optionHeight : event.deltaMode === 2 ? list.clientHeight : 1;
+    list.scrollTop += event.deltaY * deltaMultiplier;
+  };
+
   useEffect(() => {
     if (focusedIndex >= 0) listRef.current?.scrollToRow({ index: focusedIndex, align: 'smart' });
   }, [focusedIndex, listRef]);
@@ -73,6 +84,7 @@ function VirtualizedMenuList(props: MenuListProps<SelectOption, false>) {
         overscanCount={5}
         role="presentation"
         style={{ height, width: '100%' }}
+        onWheelCapture={handleWheel}
       />
     </components.MenuList>
   );
