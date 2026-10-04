@@ -58,10 +58,37 @@ test('invalid successful responses fail before rendering details', async () => {
 });
 
 test('valid details are preserved and the slug is URL encoded', async () => {
-  const data = { name: 'bulbasaur', id: 1 };
+  const response = {
+    name: 'bulbasaur',
+    id: 1,
+    sprites: {
+      front_default: 'front.png',
+      back_default: 'back.png',
+      front_shiny: 'front-shiny.png',
+      back_shiny: 'back-shiny.png',
+      other: { officialArtwork: 'unused.png' },
+    },
+    abilities: [{ ability: { name: 'overgrow', url: '/abilities/overgrow' }, is_hidden: false }],
+    stats: [{ base_stat: 45, effort: 0, stat: { name: 'hp', url: '/stats/hp' } }],
+    types: [{ slot: 1, type: { name: 'grass', url: '/types/grass' } }],
+    unusedApiField: 'should not reach the browser',
+  };
+  const data = {
+    id: 1,
+    name: 'bulbasaur',
+    sprites: {
+      front_default: 'front.png',
+      back_default: 'back.png',
+      front_shiny: 'front-shiny.png',
+      back_shiny: 'back-shiny.png',
+    },
+    abilities: [{ ability: { name: 'overgrow' } }],
+    stats: [{ base_stat: 45, stat: { name: 'hp' } }],
+    types: [{ type: { name: 'grass' } }],
+  };
   await withFetch(async (url) => {
     assert.equal(url, 'https://pokeapi.co/api/v2/pokemon/bulbasaur%2Fextra');
-    return { status: 200, ok: true, json: async () => data };
+    return { status: 200, ok: true, json: async () => response };
   }, async () => {
     assert.deepEqual(await getStaticProps({ params: { slug: 'bulbasaur/extra' } }), { props: { data }, revalidate: 86400 });
   });
