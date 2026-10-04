@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { GetStaticPaths, GetStaticProps } from 'next';
+import { pokeApiFetch } from '../lib/pokeapi';
 import { PokemonDetails } from '../types/pokemonDetails';
 const prerenderedPokemons = 50;
 interface DetailsProps {
@@ -99,7 +100,7 @@ export const getStaticProps: GetStaticProps = async context => {
   if (typeof slug !== 'string' || !slug.trim()) {
     return { notFound: true };
   }
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(slug)}`);
+  const res = await pokeApiFetch(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(slug)}`);
   if (res.status === 404) {
     return { notFound: true };
   }
@@ -123,7 +124,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
   // request (fallback: 'blocking') and then cached. If the API is unavailable
   // at build time, the build still succeeds and every page is built on demand.
   try {
-    const res = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=0&limit=${prerenderedPokemons}`);
+    const res = await pokeApiFetch(`https://pokeapi.co/api/v2/pokemon?offset=0&limit=${prerenderedPokemons}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (!Array.isArray(data?.results)) throw new Error('Invalid Pokemon list response');

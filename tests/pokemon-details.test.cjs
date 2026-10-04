@@ -5,6 +5,13 @@ const ts = require('typescript');
 const Module = require('node:module');
 const path = require('node:path');
 
+// Let the page import local .ts modules (lib/pokeapi.ts) when loaded outside Next.js.
+require.extensions['.ts'] = (mod, file) => {
+  mod._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, esModuleInterop: true },
+  }).outputText, file);
+};
+
 // Load the existing page without adding a test framework or changing Next.js.
 const filename = path.resolve(__dirname, '../pages/[slug].tsx');
 const compiled = ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
