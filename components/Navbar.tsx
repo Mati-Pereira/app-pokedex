@@ -6,8 +6,8 @@ import { KeyboardEvent, useContext, useEffect, useRef, useState } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import WindowedSelect, { createFilter } from 'react-windowed-select';
 import { InputContext } from '../context/InputPokemon';
+import { fetchPokemonNames, usePokeApi } from '../lib/usePokeApi';
 import types from '../data/types.json';
-import type { NamedResource, PokemonListResponse } from '../types/pokeapi';
 import Toggle from './Toggle';
 
 interface SelectOption {
@@ -17,10 +17,16 @@ interface SelectOption {
 
 function Navbar() {
   const { updateInput } = useContext(InputContext);
-  const [pokemon, setPokemon] = useState<NamedResource[]>([]);
-  const [namesError, setNamesError] = useState('');
-  const [namesLoading, setNamesLoading] = useState(true);
-  const [namesRetry, setNamesRetry] = useState(0);
+  const {
+    data: pokemon,
+    isLoading: namesLoading,
+    error: namesError,
+    retry: retryNames,
+  } = usePokeApi(
+    'names',
+    signal => fetchPokemonNames('https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0', signal),
+    'Unable to load Pokemon names. Please try again.'
+  );
   const [inputName, setInputName] = useState('');
   const [inputType, setInputType] = useState('');
   const [isLoadingName, setIsLoadingName] = useState(false);
@@ -79,40 +85,6 @@ function Navbar() {
   const handleTypeSelected = (selectedPokemon: unknown) => {
     if (selectedPokemon) setInputType((selectedPokemon as SelectOption).label);
   };
-
-  useEffect(() => {
-    let active = true;
-    const controller = new AbortController();
-    async function getNames() {
-      setNamesLoading(true);
-      setNamesError('');
-      try {
-        const res = await fetch('https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0', {
-          signal: controller.signal,
-        });
-        if (!res.ok) throw new Error(`Pokemon names request failed: HTTP ${res.status}`);
-        const data = (await res.json()) as PokemonListResponse;
-        if (
-          !Array.isArray(data.results) ||
-          !data.results.every(
-            entry => entry && typeof entry.name === 'string'
-          )
-        ) {
-          throw new Error('Invalid Pokemon names response');
-        }
-        if (active) setPokemon(data.results);
-      } catch {
-        if (active) setNamesError('Unable to load Pokemon names. Please try again.');
-      } finally {
-        if (active) setNamesLoading(false);
-      }
-    }
-    getNames();
-    return () => {
-      active = false;
-      controller.abort();
-    };
-  }, [namesRetry]);
 
   useEffect(() => {
     if (!router.isReady || router.pathname !== '/types') return;
@@ -197,11 +169,7 @@ function Navbar() {
         {namesError && (
           <div className="w-full">
             <p role="alert">{namesError}</p>
-            <button
-              type="button"
-              className="btn mt-4"
-              onClick={() => setNamesRetry(value => value + 1)}
-            >
+            <button type="button" className="btn mt-4" onClick={retryNames}>
               Try again
             </button>
           </div>

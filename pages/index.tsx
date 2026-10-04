@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Grid from "../components/Grid";
 import Pokemon from "../components/Pokemon";
-import type { PokemonListResponse } from "../types/pokeapi";
+import { fetchPokemonDetails, fetchPokemonList, usePokeApi } from "../lib/usePokeApi";
 import type { PokemonDetails } from "../types/pokemonDetails";
 
 const Pagination = dynamic(() => import("react-responsive-pagination"), { ssr: false });
@@ -14,59 +14,28 @@ const Pagination = dynamic(() => import("react-responsive-pagination"), { ssr: f
 const pokemonsPerPage = 9;
 
 const Index: NextPage = () => {
-  const [totalOfPokemons, setTotalOfPokemons] = useState(0);
-  const pageCount = Math.ceil(totalOfPokemons / pokemonsPerPage);
-  const [off, setOff] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setLoading] = useState(true);
-  const [pokemons, setPokemons] = useState<PokemonDetails[]>([]);
-
-  const [error, setError] = useState("");
-  const [retry, setRetry] = useState(0);
+  const [totalOfPokemons, setTotalOfPokemons] = useState(0);
+  const offset = (currentPage - 1) * pokemonsPerPage;
+  const { data, isLoading, error, retry } = usePokeApi(
+    `list:${offset}`,
+    async signal => {
+      const list = await fetchPokemonList(
+        `https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${pokemonsPerPage}`,
+        signal
+      );
+      return { count: list.count, pokemons: await fetchPokemonDetails(list.results, signal) };
+    },
+    "Unable to load Pokemon. Please try again."
+  );
+  const pokemons = data?.pokemons ?? [];
+  const pageCount = Math.ceil(totalOfPokemons / pokemonsPerPage);
 
   useEffect(() => {
-    let active = true;
-    const controller = new AbortController();
-    async function getPokemon() {
-      setLoading(true);
-      setError("");
-      setPokemons([]);
-      try {
-        const res = await fetch(
-          `https://pokeapi.co/api/v2/pokemon?offset=${off}&limit=${pokemonsPerPage}`,
-          { signal: controller.signal }
-        );
-        if (!res.ok) throw new Error(`Pokemon list request failed: HTTP ${res.status}`);
-        const data = (await res.json()) as PokemonListResponse;
-        if (!Number.isSafeInteger(data.count) || data.count < 0 || !Array.isArray(data.results)) throw new Error("Invalid Pokemon list response");
-        const results = await Promise.all(data.results.map(async pokemon => {
-          const res = await fetch(pokemon.url, { signal: controller.signal });
-          if (!res.ok) throw new Error(`Pokemon request failed: HTTP ${res.status}`);
-          const detail = (await res.json()) as PokemonDetails;
-          if (!detail || typeof detail.name !== "string" || !detail.sprites || !Array.isArray(detail.types)) {
-            throw new Error("Invalid Pokemon response");
-          }
-          return detail;
-        }));
-        if (active) {
-          setTotalOfPokemons(data.count);
-          setPokemons(results);
-        }
-      } catch {
-        controller.abort();
-        if (active) setError("Unable to load Pokemon. Please try again.");
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-    getPokemon();
-    return () => { active = false; controller.abort(); };
-  }, [off, retry]);
+    if (data) setTotalOfPokemons(data.count);
+  }, [data]);
 
-  const handlePageChange = (page: number) => {
-    setOff((page - 1) * pokemonsPerPage);
-    setCurrentPage(page);
-  };
+  const handlePageChange = (page: number) => setCurrentPage(page);
 
   if (isLoading) {
     return (
@@ -79,7 +48,7 @@ const Index: NextPage = () => {
     return (
       <div className="px-6 py-8 bg-slate-100 dark:bg-slate-800 dark:text-slate-50">
         <p role="alert">{error}</p>
-        <button type="button" className="btn mt-4" onClick={() => setRetry(value => value + 1)}>Try again</button>
+        <button type="button" className="btn mt-4" onClick={retry}>Try again</button>
       </div>
     );
   }
