@@ -6,7 +6,7 @@ const Module = require('node:module');
 const vm = require('node:vm');
 const ts = require('typescript');
 const React = require('react');
-const { create, act } = require('react-test-renderer');
+const { fireEvent, render, screen } = require('./setup-dom.cjs');
 function load(relative) {
   const filename = path.resolve(__dirname, '..', relative);
   const loaded = new Module(filename, module);
@@ -35,27 +35,24 @@ test('blocked storage does not interrupt initial document execution', () => {
   assert.doesNotThrow(() => vm.runInNewContext(script, { localStorage: { getItem() { throw new Error('Storage blocked'); } } }));
 });
 test('toggle reads the applied theme and switches even if storage cannot be written', () => {
-  const originalDocument = global.document;
   const originalStorage = global.localStorage;
-  let tree;
-  let dark = true;
   let saved;
-  global.document = { documentElement: { classList: { contains: () => dark, toggle: (name, value) => { dark = value; } } } };
+  global.document.documentElement.classList.add('dark');
   global.localStorage = { setItem: (name, value) => { assert.equal(name, 'theme'); saved = value; } };
   try {
-    act(() => { tree = create(React.createElement(Toggle)); });
-    act(() => tree.root.findByType('button').props.onClick());
-    assert.equal(dark, false);
+    render(React.createElement(Toggle));
+    const toggle = screen.getByRole('button', { name: 'Color mode switch button' });
+    fireEvent.click(toggle);
+    assert.equal(global.document.documentElement.classList.contains('dark'), false);
     assert.equal(saved, 'light');
-    act(() => tree.root.findByType('button').props.onClick());
-    assert.equal(dark, true);
+    fireEvent.click(toggle);
+    assert.equal(global.document.documentElement.classList.contains('dark'), true);
     assert.equal(saved, 'dark');
     global.localStorage = { setItem() { throw new Error('Blocked'); } };
-    act(() => tree.root.findByType('button').props.onClick());
-    assert.equal(dark, false);
+    fireEvent.click(toggle);
+    assert.equal(global.document.documentElement.classList.contains('dark'), false);
   } finally {
-    if (tree) act(() => tree.unmount());
-    global.document = originalDocument;
+    global.document.documentElement.classList.remove('dark');
     global.localStorage = originalStorage;
   }
 });

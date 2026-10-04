@@ -5,13 +5,39 @@ const path = require('node:path');
 const Module = require('node:module');
 const ts = require('typescript');
 const React = require('react');
-const { create, act } = require('react-test-renderer');
+const { act, createEvent, fireEvent, render, screen, waitFor } = require('./setup-dom.cjs');
 
 const navigations = [];
 let pushResult = () => Promise.resolve(true);
 const router = { isReady: true, pathname: "/", query: {}, push: (url) => { navigations.push(url); return pushResult(); } };
 const context = React.createContext({ updateInput() {} });
-function MockSelect() { return null; }
+function MockSelect(props) {
+  const [localValue, setLocalValue] = React.useState('');
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const selected = props.value === undefined ? localValue : props.value?.value ?? '';
+  const choose = event => {
+    const option = { value: event.target.value, label: event.target.value };
+    setLocalValue(option.value);
+    props.onChange(option);
+  };
+  return React.createElement('div', null,
+    React.createElement('input', {
+      'aria-label': props['aria-label'],
+      'data-testid': props.instanceId,
+      value: selected,
+      onChange: choose,
+      onKeyDown: props.onKeyDown,
+    }),
+    React.createElement('button', {
+      type: 'button',
+      'aria-label': `${props.instanceId} ${menuOpen ? 'close' : 'open'} options`,
+      onClick: () => {
+        if (menuOpen) props.onMenuClose();
+        else props.onMenuOpen();
+        setMenuOpen(!menuOpen);
+      },
+    }, menuOpen ? 'Close options' : 'Open options'));
+}
 function load(relative) {
   const filename = path.resolve(__dirname, '..', relative);
   const compiled = ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
@@ -35,9 +61,11 @@ function load(relative) {
 }
 const Navbar = load('components/Navbar.tsx').default;
 
-function keyEvent(key, composing = false) {
-  return { key, nativeEvent: { isComposing: composing }, defaultPrevented: false,
-    preventDefault() { this.defaultPrevented = true; } };
+function press(input, key, composing = false) {
+  const event = createEvent.keyDown(input, { key });
+  Object.defineProperty(event, 'isComposing', { value: composing });
+  fireEvent(input, event);
+  return event;
 }
 
 for (const [index, label, first, second, expected] of [
@@ -46,49 +74,40 @@ for (const [index, label, first, second, expected] of [
 ]) {
   test(`${label} search preserves selection keys and submits only a valid closed-menu Enter or button`, async () => {
     const originalFetch = global.fetch;
-    const originalTimeout = global.setTimeout;
     global.fetch = async () => ({ ok: true, json: async () => ({ results: [] }) });
-    global.setTimeout = (callback) => { callback(); return 0; };
     navigations.length = 0;
-    let tree;
+    let view;
     try {
-      await act(async () => { tree = create(React.createElement(Navbar)); });
-      const select = () => tree.root.findAllByType(MockSelect)[index];
-      const press = (key, composing) => {
-        const event = keyEvent(key, composing);
-        act(() => select().props.onKeyDown(event));
-        return event;
-      };
-      const button = () => tree.root.findAllByType('button')[index];
+      view = render(React.createElement(Navbar));
+      const input = screen.getByTestId(index === 0 ? 'pokemon-name' : 'pokemon-type');
+      const button = () => screen.getByRole('button', { name: index === 0 ? 'Search by name' : 'Search by type' });
 
-      assert.equal(press('Enter').defaultPrevented, false);
-      act(() => { button().props.onClick(); });
+      assert.equal(press(input, 'Enter').defaultPrevented, false);
+      fireEvent.click(button());
       assert.deepEqual(navigations, []);
 
-      act(() => select().props.onChange({ value: first, label: first }));
+      fireEvent.change(input, { target: { value: first } });
       for (const key of ['b', 'ArrowDown', 'ArrowUp', 'Backspace', 'Escape', 'Tab']) {
-        assert.equal(press(key).defaultPrevented, false);
+        assert.equal(press(input, key).defaultPrevented, false);
       }
       assert.deepEqual(navigations, []);
 
-      act(() => select().props.onMenuOpen());
-      assert.equal(press('Enter').defaultPrevented, false);
+      fireEvent.click(screen.getByRole('button', { name: `${index === 0 ? 'pokemon-name' : 'pokemon-type'} open options` }));
+      assert.equal(press(input, 'Enter').defaultPrevented, false);
       assert.deepEqual(navigations, [], 'Enter must allow the select to choose the highlighted option');
-      act(() => {
-        select().props.onChange({ value: second, label: second });
-        select().props.onMenuClose();
-      });
-      assert.equal(press('Enter', true).defaultPrevented, false);
+      fireEvent.change(input, { target: { value: second } });
+      fireEvent.click(screen.getByRole('button', { name: `${index === 0 ? 'pokemon-name' : 'pokemon-type'} close options` }));
+      assert.equal(press(input, 'Enter', true).defaultPrevented, false);
       assert.deepEqual(navigations, [], 'IME composition must not submit a search');
-      assert.equal(press('Enter').defaultPrevented, true);
+      assert.equal(press(input, 'Enter').defaultPrevented, true);
       assert.deepEqual(navigations, [expected]);
-      await act(async () => {});
-      await act(async () => { await button().props.onClick(); });
+      await waitFor(() => assert.equal(button().getAttribute('aria-busy'), 'false'));
+      fireEvent.click(button());
+      await waitFor(() => assert.deepEqual(navigations, [expected, expected]));
       assert.deepEqual(navigations, [expected, expected]);
     } finally {
-      if (tree) act(() => tree.unmount());
+      if (view) view.unmount();
       global.fetch = originalFetch;
-      global.setTimeout = originalTimeout;
     }
   });
 }
@@ -105,48 +124,43 @@ for (const [index, label] of [[0, 'name'], [1, 'type']]) {
         rejectNavigation = reject;
       });
       navigations.length = 0;
-      let tree;
+      let view;
       try {
-        await act(async () => { tree = create(React.createElement(Navbar)); });
-        const selects = () => tree.root.findAllByType(MockSelect);
-        const buttons = () => tree.root.findAllByType('button');
-        act(() => {
-          selects()[0].props.onChange({ value: 'pikachu', label: 'pikachu' });
-          selects()[1].props.onChange({ value: 'fire', label: 'fire' });
-        });
-        let pending;
-        act(() => { pending = buttons()[index].props.onClick(); });
-        assert.equal(buttons()[index].props['aria-busy'], true);
-        assert.equal(buttons()[1 - index].props['aria-busy'], false);
-        assert.equal(buttons()[0].props.disabled, true);
-        assert.equal(buttons()[1].props.disabled, true);
-        act(() => {
-          buttons()[index].props.onClick();
-          buttons()[1 - index].props.onClick();
-          selects()[index].props.onKeyDown(keyEvent('Enter'));
-        });
+        view = render(React.createElement(Navbar));
+        const inputs = [screen.getByTestId('pokemon-name'), screen.getByTestId('pokemon-type')];
+        const buttons = [screen.getByRole('button', { name: 'Search by name' }), screen.getByRole('button', { name: 'Search by type' })];
+        fireEvent.change(inputs[0], { target: { value: 'pikachu' } });
+        fireEvent.change(inputs[1], { target: { value: 'fire' } });
+        fireEvent.click(buttons[index]);
+        await waitFor(() => assert.equal(buttons[index].getAttribute('aria-busy'), 'true'));
+        assert.equal(buttons[1 - index].getAttribute('aria-busy'), 'false');
+        assert.equal(buttons[0].disabled, true);
+        assert.equal(buttons[1].disabled, true);
+        fireEvent.click(buttons[index]);
+        fireEvent.click(buttons[1 - index]);
+        press(inputs[index], 'Enter');
         assert.equal(navigations.length, 1, 'pending navigation must block duplicate and competing searches');
         // An event-loop turn must not clear loading while router.push is unresolved.
         await act(async () => { await new Promise(setImmediate); });
-        assert.equal(buttons()[index].props['aria-busy'], true);
+        assert.equal(buttons[index].getAttribute('aria-busy'), 'true');
         await act(async () => {
           if (outcome === 'success') resolveNavigation(true);
           if (outcome === 'false') resolveNavigation(false);
           if (outcome === 'cancelled') rejectNavigation(Object.assign(new Error('Cancelled'), { cancelled: true }));
           if (outcome === 'error') rejectNavigation(new Error('Navigation failed'));
-          await pending;
+          await new Promise(setImmediate);
         });
-        assert.equal(buttons()[index].props['aria-busy'], false);
-        assert.equal(buttons()[0].props.disabled, false);
-        assert.equal(buttons()[1].props.disabled, false);
-        const alerts = tree.root.findAllByProps({ role: 'alert' });
-        assert.equal(alerts.length, outcome === 'error' ? 1 : 0);
+        await waitFor(() => assert.equal(buttons[index].getAttribute('aria-busy'), 'false'));
+        assert.equal(buttons[0].disabled, false);
+        assert.equal(buttons[1].disabled, false);
+        assert.equal(screen.queryAllByRole('alert').length, outcome === 'error' ? 1 : 0);
         pushResult = () => Promise.resolve(true);
-        await act(async () => { await buttons()[index].props.onClick(); });
+        fireEvent.click(buttons[index]);
+        await waitFor(() => assert.equal(navigations.length, 2));
         assert.equal(navigations.length, 2, 'a new search must work after completion or failure');
-        assert.equal(tree.root.findAllByProps({ role: 'alert' }).length, 0);
+        assert.equal(screen.queryAllByRole('alert').length, 0);
       } finally {
-        if (tree) act(() => tree.unmount());
+        if (view) view.unmount();
         global.fetch = originalFetch;
         pushResult = () => Promise.resolve(true);
       }
@@ -160,21 +174,22 @@ test('type selection follows URL changes and submits the restored value', async 
   router.pathname = '/types';
   router.query = { type: 'fire' };
   navigations.length = 0;
-  let tree;
+  let view;
   try {
-    await act(async () => { tree = create(React.createElement(Navbar)); });
-    const select = () => tree.root.findAllByType(MockSelect)[1];
-    assert.equal(select().props.value.value, 'fire');
+    view = render(React.createElement(Navbar));
+    const input = screen.getByTestId('pokemon-type');
+    await waitFor(() => assert.equal(input.value, 'fire'));
     router.query = { type: 'water' };
-    await act(async () => { tree.update(React.createElement(Navbar)); });
-    assert.equal(select().props.value.value, 'water');
-    await act(async () => { await tree.root.findAllByType('button')[1].props.onClick(); });
+    view.rerender(React.createElement(Navbar));
+    await waitFor(() => assert.equal(input.value, 'water'));
+    fireEvent.click(screen.getByRole('button', { name: 'Search by type' }));
+    await waitFor(() => assert.deepEqual(navigations, ['/types?type=water']));
     assert.deepEqual(navigations, ['/types?type=water']);
     router.query = { type: 'unknown' };
-    await act(async () => { tree.update(React.createElement(Navbar)); });
-    assert.equal(select().props.value, null);
+    view.rerender(React.createElement(Navbar));
+    await waitFor(() => assert.equal(input.value, ''));
   } finally {
-    if (tree) act(() => tree.unmount());
+    if (view) view.unmount();
     router.pathname = '/';
     router.query = {};
     global.fetch = originalFetch;

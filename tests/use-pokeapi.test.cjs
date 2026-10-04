@@ -1,7 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const React = require('react');
-const { create, act } = require('react-test-renderer');
+const { act, renderHook, waitFor } = require('./setup-dom.cjs');
 const {
   usePokeApi,
   fetchPokemonList,
@@ -9,32 +8,22 @@ const {
   fetchPokemonDetails,
 } = require('../lib/usePokeApi.ts');
 
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-
 const ok = data => ({ ok: true, status: 200, json: async () => data });
 
 function mount(key, load) {
-  const state = { current: null };
-  function Probe({ k }) {
-    state.current = usePokeApi(k, load, 'failed');
-    return null;
-  }
-  let tree;
+  const view = renderHook(({ k }) => usePokeApi(k, load, 'failed'), {
+    initialProps: { k: key },
+  });
   return {
-    state,
-    render: async k => {
-      await act(async () => {
-        if (tree) tree.update(React.createElement(Probe, { k }));
-        else tree = create(React.createElement(Probe, { k }));
-      });
-    },
-    unmount: () => act(async () => tree.unmount()),
+    get state() { return view.result; },
+    render: async k => view.rerender({ k }),
+    unmount: view.unmount,
   };
 }
 
 test('loads data and clears the loading flag', async () => {
   const h = mount('a', async () => 'value');
-  await h.render('a');
+  await waitFor(() => assert.equal(h.state.current.data, 'value'));
   assert.deepEqual(
     {
       data: h.state.current.data,
@@ -49,7 +38,7 @@ test('reports the error message when loading fails', async () => {
   const h = mount('a', async () => {
     throw new Error('boom');
   });
-  await h.render('a');
+  await waitFor(() => assert.equal(h.state.current.error, 'failed'));
   assert.equal(h.state.current.error, 'failed');
   assert.equal(h.state.current.data, null);
   assert.equal(h.state.current.isLoading, false);
@@ -71,7 +60,7 @@ test('retry reloads after a failure', async () => {
     if (++calls === 1) throw new Error('first');
     return 'second';
   });
-  await h.render('a');
+  await waitFor(() => assert.equal(h.state.current.error, 'failed'));
   assert.equal(h.state.current.error, 'failed');
   await act(async () => h.state.current.retry());
   assert.equal(h.state.current.data, 'second');
@@ -89,6 +78,7 @@ test('a stale response cannot replace the current key result', async () => {
   );
   await h.render('a');
   await h.render('b');
+  await waitFor(() => assert.equal(Object.keys(resolvers).length, 2));
   await act(async () => {
     resolvers[1]('B');
   });
