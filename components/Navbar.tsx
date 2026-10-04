@@ -67,7 +67,7 @@ function Navbar() {
   }, [router.isReady, router.pathname, router.query]);
 
   const names: SelectOption[] | undefined = pokemon?.map(({ name }) => ({
-    label: name,
+    label: name.charAt(0).toUpperCase() + name.slice(1),
     value: name,
   }));
   const typeOptions: SelectOption[] = types.map(({ value }) => ({
