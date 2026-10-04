@@ -78,11 +78,11 @@ function Navbar() {
   return (
     <nav
       aria-label={t(language, 'navigation')}
-      className="border-b border-slate-200 bg-white p-3 transition-colors dark:border-slate-700 dark:bg-gray-900 sm:p-4 md:px-8 xl:px-16"
+      className="border-b border-paper-border bg-paper-card p-3 transition-colors dark:border-slate-700 dark:bg-gray-900 sm:p-4 md:px-8 xl:px-16"
       id="navbar"
     >
       <div className="container mx-auto flex flex-col items-center justify-between gap-4 md:flex-row">
-        <Link href="/" className="flex min-h-12 items-center rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-700" aria-label={t(language, 'homeLink')}>
+        <Link href="/" className="flex min-h-12 items-center rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-pokedex dark:focus-visible:outline-blue-700" aria-label={t(language, 'homeLink')}>
           <span className="w-24 self-center sm:w-28">
             <img src="pokedex-logo.png" alt="Pokédex" />
           </span>
@@ -125,7 +125,7 @@ function Navbar() {
               aria-label={t(language, 'language')}
               value={language}
               onChange={event => setLanguage(event.target.value === 'en' ? 'en' : 'pt-BR')}
-              className="min-h-11 rounded-lg border border-slate-400 bg-white px-2 text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 dark:border-slate-500 dark:bg-slate-800 dark:text-white"
+              className="min-h-11 rounded-lg border border-paper-border bg-paper-card px-2 text-paper-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pokedex dark:border-slate-500 dark:bg-slate-800 dark:text-white dark:focus-visible:outline-blue-700"
             >
               <option value="pt-BR">{t(language, 'portuguese')}</option>
               <option value="en">{t(language, 'english')}</option>

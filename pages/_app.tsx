@@ -11,7 +11,7 @@ import '../styles/globals.css';
 function RouteLoading() {
   const { language } = useLanguage();
   return (
-    <div role="status" aria-live="polite" className="fixed inset-0 z-50 flex cursor-wait flex-col items-center justify-center gap-4 bg-slate-100/95 dark:bg-slate-800/95 dark:text-slate-50">
+    <div role="status" aria-live="polite" className="fixed inset-0 z-50 flex cursor-wait flex-col items-center justify-center gap-4 bg-paper/95 dark:bg-slate-800/95 dark:text-slate-50">
       <div aria-hidden="true"><Waveform size={60} color="#3d3e7c" /></div>
       <p>{t(language, 'loadingPage')}</p>
     </div>

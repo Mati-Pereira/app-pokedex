@@ -2,6 +2,40 @@
 @plugin "daisyui";
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+  --color-paper: #f6f1e8;
+  --color-paper-card: #fffdf8;
+  --color-paper-border: #e7ddcf;
+  --color-paper-ink: #38332e;
+  --color-paper-muted: #6f665d;
+  --color-pokedex: #bd2935;
+  --color-pokedex-hover: #9f202a;
+  --color-pokedex-soft: #f6e7e3;
+  --color-pokedex-soft-ink: #62212a;
+}
+
+:root {
+  --select-surface: #fffdf8;
+  --select-border: #b9a996;
+  --select-focus: #bd2935;
+  --select-focus-ring: #efb9bb;
+  --select-text: #0f172a;
+  --select-muted: #475569;
+  --select-selected: #bd2935;
+  --select-option-focus: #f6e7e3;
+}
+
+:root.dark {
+  --select-surface: #fff;
+  --select-border: #94a3b8;
+  --select-focus: #1d4ed8;
+  --select-focus-ring: #93c5fd;
+  --select-text: #0f172a;
+  --select-muted: #475569;
+  --select-selected: #2563eb;
+  --select-option-focus: #dbeafe;
+}
+
 @layer base {
   button:not(:disabled),
   [role="button"]:not(:disabled) {
@@ -12,7 +46,7 @@
 body {
   min-height: 100vh;
   font-family: ui-sans-serif, system-ui, sans-serif;
-  @apply text-slate-900 antialiased bg-slate-100 dark:bg-slate-800 dark:text-slate-100;
+  @apply text-paper-ink antialiased bg-paper dark:bg-slate-800 dark:text-slate-100;
 }
 
 .pagination {
@@ -30,29 +64,49 @@ body {
   border-radius: 20px;
   text-align: center;
   line-height: 40px;
-  color: #1e293b;
+  color: #38332e;
   text-decoration: none;
 }
 
 .page-item a.page-link:hover {
-  background-color: #dbeafe;
+  background-color: #f6e7e3;
 }
 
 .page-item a.page-link:focus-visible {
-  outline: 3px solid #1d4ed8;
+  outline: 3px solid #bd2935;
   outline-offset: 2px;
 }
 
 .page-item.active .page-link {
   font-weight: 700;
   color: #ffffff;
-  background-color: #1e40af;
+  background-color: #bd2935;
 }
 
 .page-item.disabled .page-link {
-  color: #475569;
+  color: #6f665d;
   pointer-events: none;
   cursor: auto;
+}
+
+.dark .page-item .page-link {
+  color: #1e293b;
+}
+
+.dark .page-item a.page-link:hover {
+  background-color: #dbeafe;
+}
+
+.dark .page-item a.page-link:focus-visible {
+  outline-color: #1d4ed8;
+}
+
+.dark .page-item.active .page-link {
+  background-color: #1e40af;
+}
+
+.dark .page-item.disabled .page-link {
+  color: #475569;
 }
 
 @media (prefers-reduced-motion: reduce) {
