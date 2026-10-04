@@ -122,7 +122,7 @@ function SearchField({
       <button
         title="button"
         type="button"
-        className="rounded-r-full bg-blue-700 p-3 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700"
+        className="rounded-r-full bg-blue-700 p-3 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-hidden dark:bg-blue-600 dark:hover:bg-blue-700"
         onClick={onSearch}
         disabled={isDisabled}
         aria-busy={isSearching}

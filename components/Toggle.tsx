@@ -10,7 +10,7 @@ const Toggle = () => {
   };
   return (
     <>
-      <button type="button" className='w-10 h-10 focus:outline-none' onClick={toggleMode}>
+      <button type="button" className='w-10 h-10 focus:outline-hidden' onClick={toggleMode}>
         <span className='sr-only'>Color mode switch button</span>
 
         <svg

@@ -1,28 +1,26 @@
 import js from "@eslint/js";
 import nextPlugin from "@next/eslint-plugin-next";
-import reactPlugin from "eslint-plugin-react";
+import eslintReact from "@eslint-react/eslint-plugin";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  eslintReact.configs.jsx,
   {
     plugins: {
-      react: reactPlugin,
       "react-hooks": reactHooksPlugin,
       "@next/next": nextPlugin,
     },
     settings: {
-      react: { version: "18.2" },
       next: { rootDir: "." },
     },
     rules: {
-      ...reactPlugin.configs.recommended.rules,
-      ...reactHooksPlugin.configs.recommended.rules,
       ...nextPlugin.configs.recommended.rules,
-      "react/react-in-jsx-scope": "off",
-      "react/prop-types": "off",
+      "@eslint-react/no-missing-key": "error",
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     },
