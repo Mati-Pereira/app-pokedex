@@ -5,11 +5,18 @@ const path = require('node:path');
 const Module = require('node:module');
 const ts = require('typescript');
 const React = require('react');
-const { create, act } = require('react-test-renderer');
-function MockPokemon() { return null; }
-function MockPagination() { return null; }
+const { fireEvent, render, screen, waitFor } = require('./setup-dom.cjs');
+function MockPokemon({ text }) { return React.createElement('article', { 'data-testid': 'pokemon' }, text); }
+function MockPagination({ current, total, onPageChange }) {
+  return React.createElement('button', {
+    'data-testid': 'pagination',
+    'data-current': current,
+    'data-total': total,
+    onClick: () => onPageChange(current < total ? current + 1 : 1),
+  }, `Page ${current} of ${total}`);
+}
 function MockSelect() { return null; }
-function MockLoader() { return null; }
+function MockLoader() { return React.createElement('span', { 'data-testid': 'loader' }, 'Loading'); }
 const context = React.createContext({ updateInput() {} });
 const router = { isReady: true, pathname: '/types', query: { type: 'fire' }, push: async () => true };
 function load(relative) {
@@ -42,7 +49,7 @@ const response = data => ({ ok: true, status: 200, json: async () => data });
 async function setup(count, run) {
   const originalFetch = global.fetch;
   const requests = [];
-  let tree;
+  let view;
   global.fetch = async url => {
     requests.push(url);
     if (url.includes('?offset=')) {
@@ -55,37 +62,40 @@ async function setup(count, run) {
     return response({ id, name: 'pokemon-' + id, types: [], sprites: { front_default: 'sprite.png' } });
   };
   try {
-    await act(async () => { tree = create(React.createElement(Index)); });
-    await run(tree, requests);
+    view = render(React.createElement(Index));
+    await run(view, requests);
   } finally {
-    if (tree) act(() => tree.unmount());
+    if (view) view.unmount();
     global.fetch = originalFetch;
   }
 }
 test('page totals follow API counts including empty and exact page boundaries', async () => {
   for (const count of [0, 1, 9, 10, 18, 19, 1300]) {
-    await setup(count, async tree => {
-      assert.equal(tree.root.findByType(MockPagination).props.total, Math.ceil(count / 9));
-      assert.equal(tree.root.findAllByType(MockPokemon).length, Math.min(count, 9));
+    await setup(count, async () => {
+      await waitFor(() => assert.equal(screen.getByTestId('pagination').dataset.total, String(Math.ceil(count / 9))));
+      assert.equal(screen.queryAllByTestId('pokemon').length, Math.min(count, 9));
     });
   }
 });
 test('last page requests the correct offset and displays only remaining Pokemon', async () => {
-  await setup(19, async (tree, requests) => {
-    await act(async () => { tree.root.findByType(MockPagination).props.onPageChange(3); });
+  await setup(19, async (_view, requests) => {
+    await waitFor(() => assert.equal(screen.getAllByTestId('pokemon').length, 9));
+    fireEvent.click(screen.getByTestId('pagination'));
+    await waitFor(() => assert.equal(screen.getByTestId('pagination').dataset.current, '2'));
+    fireEvent.click(screen.getByTestId('pagination'));
+    await waitFor(() => assert.equal(screen.getByTestId('pagination').dataset.current, '3'));
     assert.ok(requests.includes('https://pokeapi.co/api/v2/pokemon?offset=18&limit=9'));
-    assert.equal(tree.root.findByType(MockPagination).props.current, 3);
-    assert.equal(tree.root.findByType(MockPagination).props.total, 3);
-    assert.equal(tree.root.findAllByType(MockPokemon).length, 1);
-    assert.equal(tree.root.findByType(MockPokemon).props.text, 'POKEMON-19');
+    assert.equal(screen.getByTestId('pagination').dataset.total, '3');
+    assert.equal(screen.getAllByTestId('pokemon').length, 1);
+    assert.equal(screen.getByTestId('pokemon').textContent, 'POKEMON-19');
   });
 });
 test('invalid API counts show the recoverable error instead of incorrect pagination', async () => {
   for (const count of [undefined, null, '19', -1, 1.5]) {
-    await setup(count, async tree => {
-      assert.equal(tree.root.findAllByProps({ role: 'alert' }).length, 1);
-      assert.equal(tree.root.findAllByType(MockPagination).length, 0);
-      assert.ok(tree.root.findAllByType('button').some(button => button.props.children === 'Try again'));
+    await setup(count, async () => {
+      await waitFor(() => assert.ok(screen.getByRole('alert')));
+      assert.equal(screen.queryByTestId('pagination'), null);
+      assert.ok(screen.getByRole('button', { name: 'Try again' }));
     });
   }
 });

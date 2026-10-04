@@ -5,7 +5,7 @@ const path = require('node:path');
 const Module = require('node:module');
 const ts = require('typescript');
 const React = require('react');
-const { create, act } = require('react-test-renderer');
+const { act, render, screen } = require('./setup-dom.cjs');
 const listeners = new Map();
 const events = {
   on(name, callback) { listeners.set(name, callback); },
@@ -29,28 +29,24 @@ loaded._compile(ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
 }).outputText, filename);
 const App = loaded.exports.default;
 test('navigation shows immediate feedback, preserves the page, and clears on completion or error', async () => {
-  const originals = { localStorage: global.localStorage, document: global.document, setTimeout: global.setTimeout };
+  const originals = { localStorage: global.localStorage };
   global.localStorage = { theme: 'light' };
-  global.document = { documentElement: { classList: { add() {}, remove() {} } } };
-  global.setTimeout = callback => { callback(); return 0; };
-  let tree;
   function Page() { return React.createElement('p', null, 'Current page'); }
   try {
-    await act(async () => { tree = create(React.createElement(App, { Component: Page, pageProps: {} })); });
+    const view = render(React.createElement(App, { Component: Page, pageProps: {} }));
+    await screen.findByText('Current page');
     for (const end of ['routeChangeComplete', 'routeChangeError']) {
       act(() => listeners.get('routeChangeStart')('/pikachu', { shallow: false }));
-      assert.equal(tree.root.findByProps({ role: 'status' }).findByType('p').props.children, 'Loading...');
-      assert.equal(tree.root.findAllByType(Page).length, 1);
+      assert.equal(screen.getByRole('status').textContent, 'Loading...');
+      assert.ok(screen.getByText('Current page'));
       act(() => listeners.get(end)(...(end === 'routeChangeError' ? [new Error('Cancelled')] : [])));
-      assert.equal(tree.root.findAllByProps({ role: 'status' }).length, 0);
+      assert.equal(screen.queryByRole('status'), null);
     }
     act(() => listeners.get('routeChangeStart')('/?page=2', { shallow: true }));
-    assert.equal(tree.root.findAllByProps({ role: 'status' }).length, 0);
-    act(() => tree.unmount());
-    tree = null;
+    assert.equal(screen.queryByRole('status'), null);
+    view.unmount();
     assert.equal(listeners.size, 0);
   } finally {
-    if (tree) act(() => tree.unmount());
     Object.assign(global, originals);
   }
 });

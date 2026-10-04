@@ -5,11 +5,28 @@ const path = require('node:path');
 const Module = require('node:module');
 const ts = require('typescript');
 const React = require('react');
-const { create, act } = require('react-test-renderer');
-function MockPokemon() { return null; }
-function MockPagination() { return null; }
-function MockSelect() { return null; }
-function MockLoader() { return null; }
+const { act, fireEvent, render, screen, waitFor } = require('./setup-dom.cjs');
+let latestPageChange;
+function MockPokemon({ text }) { return React.createElement('article', { 'data-testid': 'pokemon' }, text); }
+function MockPagination({ current, total, onPageChange }) {
+  latestPageChange = onPageChange;
+  return React.createElement('button', {
+    'data-testid': 'pagination',
+    'data-current': current,
+    'data-total': total,
+    onClick: () => onPageChange(current < total ? current + 1 : 1),
+  }, `Page ${current} of ${total}`);
+}
+function MockSelect({ instanceId, options, isLoading, onChange }) {
+  return React.createElement('input', {
+    'aria-label': instanceId,
+    'data-testid': `select-${instanceId}`,
+    'data-option-count': options?.length ?? 0,
+    'data-loading': String(!!isLoading),
+    onChange: event => onChange({ value: event.target.value, label: event.target.value }),
+  });
+}
+function MockLoader() { return React.createElement('span', { 'data-testid': 'loader' }, 'Loading'); }
 const context = React.createContext({ updateInput() {} });
 const router = { isReady: true, pathname: '/types', query: { type: 'fire' }, push: async () => true };
 function loadModule(relative) {
@@ -58,26 +75,24 @@ for (const kind of ['list', 'type', 'names']) {
     test(`${kind} reports ${failure} failure, stops loading, and retries successfully`, async () => {
       const originalFetch = global.fetch;
       let failing = true;
-      let tree;
+      let view;
       global.fetch = url => failing ? badApi() : Promise.resolve(goodApi(kind, url));
       try {
-        await act(async () => { tree = create(React.createElement(components[kind])); });
-        assert.equal(tree.root.findAllByProps({ role: 'alert' }).length, 1);
-        assert.equal(tree.root.findAllByType(MockLoader).length, 0);
-        if (kind === 'names') assert.equal(tree.root.findAllByType(MockSelect)[0].props.isLoading, false);
+        view = render(React.createElement(components[kind]));
+        await waitFor(() => assert.ok(screen.getByRole('alert')));
+        assert.equal(screen.queryByTestId('loader'), null);
+        if (kind === 'names') assert.equal(screen.getByTestId('select-pokemon-name').dataset.loading, 'false');
         failing = false;
-        const retry = tree.root.findAllByType('button').find(button => button.props.children === 'Try again');
-        assert.ok(retry);
-        await act(async () => { retry.props.onClick(); });
-        assert.equal(tree.root.findAllByProps({ role: 'alert' }).length, 0);
+        fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+        await waitFor(() => assert.equal(screen.queryByRole('alert'), null));
         if (kind === 'names') {
-          assert.equal(tree.root.findAllByType(MockSelect)[0].props.options[0].value, 'charmander');
-          assert.equal(tree.root.findAllByType(MockSelect)[0].props.isLoading, false);
+          assert.equal(screen.getByTestId('select-pokemon-name').dataset.optionCount, '1');
+          assert.equal(screen.getByTestId('select-pokemon-name').dataset.loading, 'false');
         } else {
-          assert.equal(tree.root.findAllByType(MockPokemon)[0].props.text, 'CHARMANDER');
+          await waitFor(() => assert.equal(screen.getByTestId('pokemon').textContent, 'CHARMANDER'));
         }
       } finally {
-        if (tree) act(() => tree.unmount());
+        if (view) view.unmount();
         global.fetch = originalFetch;
       }
     });
@@ -87,15 +102,15 @@ for (const kind of ['list', 'type']) {
   test(`${kind} handles a failed individual Pokemon request and an invalid detail response`, async () => {
     for (const badDetail of [() => ({ ok: false, status: 500 }), () => response({ name: 'charmander' })]) {
       const originalFetch = global.fetch;
-      let tree;
+      let view;
       global.fetch = async url => url.startsWith('https://example.test/') ? badDetail() : goodApi(kind, url);
       try {
-        await act(async () => { tree = create(React.createElement(components[kind])); });
-        assert.equal(tree.root.findAllByProps({ role: 'alert' }).length, 1);
-        assert.equal(tree.root.findAllByType(MockLoader).length, 0);
-        assert.equal(tree.root.findAllByType(MockPokemon).length, 0);
+        view = render(React.createElement(components[kind]));
+        await waitFor(() => assert.ok(screen.getByRole('alert')));
+        assert.equal(screen.queryByTestId('loader'), null);
+        assert.equal(screen.queryAllByTestId('pokemon').length, 0);
       } finally {
-        if (tree) act(() => tree.unmount());
+        if (view) view.unmount();
         global.fetch = originalFetch;
       }
     }
@@ -106,15 +121,16 @@ for (const kind of ['list', 'type', 'names']) {
     const originalFetch = global.fetch;
     let signal;
     let reject;
-    let tree;
+    let view;
     global.fetch = (url, options) => {
       signal = options.signal;
       return new Promise((resolve, rejectPromise) => { reject = rejectPromise; });
     };
     try {
-      await act(async () => { tree = create(React.createElement(components[kind])); });
+      view = render(React.createElement(components[kind]));
+      await waitFor(() => assert.ok(signal));
       assert.equal(signal.aborted, false);
-      act(() => tree.unmount());
+      view.unmount();
       assert.equal(signal.aborted, true);
       await act(async () => { reject(new Error('Cancelled')); });
     } finally {
@@ -126,21 +142,24 @@ for (const kind of ['list', 'type', 'names']) {
 test('list ignores an old page response even when the API mock does not honor cancellation', async () => {
   const originalFetch = global.fetch;
   let resolveOld;
-  let tree;
+  let view;
   global.fetch = async url => {
     if (url.includes('offset=9&')) return new Promise(resolve => { resolveOld = resolve; });
     return goodApi('list', url);
   };
   try {
-    await act(async () => { tree = create(React.createElement(components.list)); });
-    const changePage = tree.root.findByType(MockPagination).props.onPageChange;
+    view = render(React.createElement(components.list));
+    await waitFor(() => assert.equal(screen.getByTestId('pagination').dataset.current, '1'));
+    const changePage = latestPageChange;
     await act(async () => { changePage(2); });
+    await waitFor(() => assert.equal(typeof resolveOld, 'function'));
     await act(async () => { changePage(3); });
+    await waitFor(() => assert.equal(screen.getByTestId('pagination').dataset.current, '3'));
     await act(async () => { resolveOld(response({ count: 27, results: [] })); });
-    assert.equal(tree.root.findByType(MockPagination).props.current, 3);
-    assert.equal(tree.root.findAllByType(MockPokemon)[0].props.text, 'CHARMANDER');
+    assert.equal(screen.getByTestId('pagination').dataset.current, '3');
+    assert.equal(screen.getByTestId('pokemon').textContent, 'CHARMANDER');
   } finally {
-    if (tree) act(() => tree.unmount());
+    if (view) view.unmount();
     global.fetch = originalFetch;
   }
 });

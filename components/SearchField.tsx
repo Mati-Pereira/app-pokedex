@@ -103,6 +103,7 @@ function SearchField({
     <div className="flex items-stretch">
       <Select<SelectOption, false>
         instanceId={instanceId}
+        aria-label={ariaLabel}
         isLoading={isLoadingOptions}
         options={options}
         {...selectProps}
