@@ -7,11 +7,17 @@ import { AiOutlineSearch } from 'react-icons/ai';
 import WindowedSelect, { createFilter } from 'react-windowed-select';
 import { InputContext } from '../context/InputPokemon';
 import types from '../data/types.json';
+import type { NamedResource, PokemonListResponse } from '../types/pokeapi';
 import Toggle from './Toggle';
+
+interface SelectOption {
+  label: string;
+  value: string;
+}
 
 function Navbar() {
   const { updateInput } = useContext(InputContext);
-  const [pokemon, setPokemon] = useState<{ name: string }[]>([]);
+  const [pokemon, setPokemon] = useState<NamedResource[]>([]);
   const [namesError, setNamesError] = useState('');
   const [namesLoading, setNamesLoading] = useState(true);
   const [namesRetry, setNamesRetry] = useState(0);
@@ -66,12 +72,12 @@ function Navbar() {
     handleType();
   };
 
-  const handleNameSelected = (selectedPokemon: any) => {
-    setInputName(selectedPokemon.value);
+  const handleNameSelected = (selectedPokemon: unknown) => {
+    if (selectedPokemon) setInputName((selectedPokemon as SelectOption).value);
   };
 
-  const handleTypeSelected = (selectedPokemon: any) => {
-    setInputType(selectedPokemon.label);
+  const handleTypeSelected = (selectedPokemon: unknown) => {
+    if (selectedPokemon) setInputType((selectedPokemon as SelectOption).label);
   };
 
   useEffect(() => {
@@ -85,11 +91,11 @@ function Navbar() {
           signal: controller.signal,
         });
         if (!res.ok) throw new Error(`Pokemon names request failed: HTTP ${res.status}`);
-        const data = await res.json();
+        const data = (await res.json()) as PokemonListResponse;
         if (
           !Array.isArray(data.results) ||
           !data.results.every(
-            (entry: { name?: unknown }) => entry && typeof entry.name === 'string'
+            entry => entry && typeof entry.name === 'string'
           )
         ) {
           throw new Error('Invalid Pokemon names response');
@@ -114,7 +120,7 @@ function Navbar() {
     setInputType(
       typeof type === 'string' && types.some(option => option.value === type) ? type : ''
     );
-  }, [router.isReady, router.pathname, router.query['type']]);
+  }, [router.isReady, router.pathname, router.query]);
 
   const names = pokemon?.map((pokemon: { name: string }) => {
     return { label: pokemon.name, value: pokemon.name };

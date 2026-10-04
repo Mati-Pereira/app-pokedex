@@ -77,7 +77,7 @@ function Details({ data }: DetailsProps) {
           </div>
           <table className="flex w-fit flex-col justify-around pb-10">
             <tbody className="flex flex-col justify-evenly border-slate-800 bg-slate-100 dark:border-slate-100 dark:bg-slate-800">
-              {data.stats.map((stat, i) => (
+              {data.stats.map(stat => (
                 <tr key={stat.stat.name}>
                   <td className="mb-10 w-36 whitespace-nowrap border-b border-slate-600 px-6 py-4 text-sm font-medium text-slate-800 dark:text-white md:w-40 lg:w-48">
                     {stat.stat.name}

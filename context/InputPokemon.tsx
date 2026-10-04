@@ -1,7 +1,7 @@
 import { createContext, ReactNode, useState } from 'react';
 export const InputContext = createContext<InputContextProps>({
   input: '',
-  updateInput: function (value: string): void {
+  updateInput: function (_value: string): void {
     throw new Error('Update não Funcionou.');
   },
 });

@@ -5,7 +5,8 @@ import { useEffect, useState } from 'react';
 import Grid from '../components/Grid';
 import Pokemon from '../components/Pokemon';
 import types from '../data/types.json';
-import { PokemonDetails } from '../types/pokemonDetails';
+import type { TypeResponse } from '../types/pokeapi';
+import type { PokemonDetails } from '../types/pokemonDetails';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 
@@ -25,7 +26,7 @@ const Types = () => {
     typeof queryType === 'string' && types.some(option => option.value === queryType)
       ? queryType
       : '';
-  const handlePageChange = (page: any) => {
+  const handlePageChange = (page: number) => {
     setLoading(true);
     setCurrentPage(page);
     const initialIndex = (page - 1) * 9;
@@ -52,12 +53,12 @@ const Types = () => {
           signal: controller.signal,
         });
         if (!res.ok) throw new Error(`Type request failed: HTTP ${res.status}`);
-        const data = await res.json();
+        const data = (await res.json()) as TypeResponse;
         if (!Array.isArray(data.pokemon)) throw new Error('Invalid type response');
-        const promises = data.pokemon.map(async (entry: { pokemon: { url: string } }) => {
+        const promises = data.pokemon.map(async entry => {
           const res = await fetch(entry.pokemon.url, { signal: controller.signal });
           if (!res.ok) throw new Error(`Pokemon request failed: HTTP ${res.status}`);
-          const detail = await res.json();
+          const detail = (await res.json()) as PokemonDetails;
           if (
             !detail ||
             typeof detail.name !== 'string' ||
