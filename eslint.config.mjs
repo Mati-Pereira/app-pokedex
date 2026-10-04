@@ -11,7 +11,7 @@ export default tseslint.config(
     plugins: {
       react: reactPlugin,
       "react-hooks": reactHooksPlugin,
-      next: nextPlugin,
+      "@next/next": nextPlugin,
     },
     settings: {
       react: { version: "18.2" },
@@ -26,6 +26,14 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     },
+  },
+  {
+    files: ["**/*.cjs"],
+    languageOptions: {
+      sourceType: "commonjs",
+      globals: { require: "readonly", module: "writable", __dirname: "readonly", global: "writable", process: "readonly", setImmediate: "readonly", URL: "readonly", console: "readonly" },
+    },
+    rules: { "@typescript-eslint/no-require-imports": "off" },
   },
   {
     ignores: [".next/", "node_modules/", "out/", "build/", "*.config.*", "next-env.d.ts"],
