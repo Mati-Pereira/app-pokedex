@@ -1,19 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
-import { Ring } from '@uiball/loaders';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { KeyboardEvent, useContext, useEffect, useRef, useState } from 'react';
-import { AiOutlineSearch } from 'react-icons/ai';
-import WindowedSelect, { createFilter } from 'react-windowed-select';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { InputContext } from '../context/InputPokemon';
 import { fetchPokemonNames, usePokeApi } from '../lib/usePokeApi';
 import types from '../data/types.json';
+import SearchField, { SelectOption } from './SearchField';
 import Toggle from './Toggle';
-
-interface SelectOption {
-  label: string;
-  value: string;
-}
 
 function Navbar() {
   const { updateInput } = useContext(InputContext);
@@ -31,8 +24,6 @@ function Navbar() {
   const [inputType, setInputType] = useState('');
   const [isLoadingName, setIsLoadingName] = useState(false);
   const [isLoadingType, setIsLoadingType] = useState(false);
-  const [isNameMenuOpen, setNameMenuOpen] = useState(false);
-  const [isTypeMenuOpen, setTypeMenuOpen] = useState(false);
   const [searchError, setSearchError] = useState('');
   const navigationPending = useRef(false);
   const isSearching = isLoadingName || isLoadingType;
@@ -64,28 +55,6 @@ function Navbar() {
   const handleType = () =>
     navigateSearch(inputType, `/types?type=${encodeURIComponent(inputType)}`, setIsLoadingType);
 
-  const handleNameKeyDown = (event: KeyboardEvent) => {
-    if (event.key !== 'Enter' || event.nativeEvent.isComposing || isNameMenuOpen || !inputName)
-      return;
-    event.preventDefault();
-    handleName();
-  };
-
-  const handleTypeKeyDown = (event: KeyboardEvent) => {
-    if (event.key !== 'Enter' || event.nativeEvent.isComposing || isTypeMenuOpen || !inputType)
-      return;
-    event.preventDefault();
-    handleType();
-  };
-
-  const handleNameSelected = (selectedPokemon: unknown) => {
-    if (selectedPokemon) setInputName((selectedPokemon as SelectOption).value);
-  };
-
-  const handleTypeSelected = (selectedPokemon: unknown) => {
-    if (selectedPokemon) setInputType((selectedPokemon as SelectOption).label);
-  };
-
   useEffect(() => {
     if (!router.isReady || router.pathname !== '/types') return;
     const type = router.query['type'];
@@ -94,11 +63,10 @@ function Navbar() {
     );
   }, [router.isReady, router.pathname, router.query]);
 
-  const names = pokemon?.map((pokemon: { name: string }) => {
-    return { label: pokemon.name, value: pokemon.name };
-  });
-
-  const customFilter = createFilter({ ignoreAccents: false, trim: true });
+  const names: SelectOption[] | undefined = pokemon?.map(({ name }) => ({
+    label: name,
+    value: name,
+  }));
 
   return (
     <nav
@@ -112,58 +80,30 @@ function Navbar() {
           </span>
         </Link>
         <div className="flex flex-col gap-8 md:flex-row md:gap-16">
-          <div className="flex items-stretch">
-            <WindowedSelect
-              instanceId="pokemon-name"
-              isLoading={namesLoading}
-              options={names}
-              windowThreshold={50}
-              filterOption={customFilter}
-              onChange={handleNameSelected}
-              onMenuOpen={() => setNameMenuOpen(true)}
-              onMenuClose={() => setNameMenuOpen(false)}
-              onKeyDown={handleNameKeyDown}
-              className="w-48"
-              placeholder="Select Per Name..."
-            />
-            <button
-              title="button"
-              type="button"
-              className="rounded-r-full bg-blue-700 p-3 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700"
-              onClick={handleName}
-              disabled={isSearching}
-              aria-busy={isLoadingName}
-              aria-label="Search by name"
-            >
-              {isLoadingName ? <Ring size={14} color="#eee" /> : <AiOutlineSearch />}
-            </button>
-          </div>
-          <div className="flex items-stretch">
-            <WindowedSelect
-              instanceId="pokemon-type"
-              value={types.find(option => option.value === inputType) || null}
-              options={types}
-              windowThreshold={50}
-              filterOption={customFilter}
-              onChange={handleTypeSelected}
-              onMenuOpen={() => setTypeMenuOpen(true)}
-              onMenuClose={() => setTypeMenuOpen(false)}
-              onKeyDown={handleTypeKeyDown}
-              className="w-48"
-              placeholder="Select Per Type..."
-            />
-            <button
-              title="button"
-              type="button"
-              className="rounded-r-full bg-blue-700 p-3 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700"
-              onClick={handleType}
-              disabled={isSearching}
-              aria-busy={isLoadingType}
-              aria-label="Search by type"
-            >
-              {isLoadingType ? <Ring size={14} color="#eee" /> : <AiOutlineSearch />}
-            </button>
-          </div>
+          <SearchField
+            instanceId="pokemon-name"
+            placeholder="Select Per Name..."
+            ariaLabel="Search by name"
+            options={names}
+            isLoadingOptions={namesLoading}
+            canSearch={!!inputName}
+            isSearching={isLoadingName}
+            isDisabled={isSearching}
+            onSelect={option => setInputName(option.value)}
+            onSearch={handleName}
+          />
+          <SearchField
+            instanceId="pokemon-type"
+            placeholder="Select Per Type..."
+            ariaLabel="Search by type"
+            options={types}
+            value={types.find(option => option.value === inputType) || null}
+            canSearch={!!inputType}
+            isSearching={isLoadingType}
+            isDisabled={isSearching}
+            onSelect={option => setInputType(option.label)}
+            onSearch={handleType}
+          />
         </div>
         <Toggle />
         {namesError && (
