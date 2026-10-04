@@ -23,7 +23,7 @@ function Details({ data }: DetailsProps) {
       </h1>
       <div className="grid gap-5 md:grid-cols-2 md:gap-8">
         <section aria-label={t(language, 'gallery', { name: data.name })} className="rounded-2xl border border-paper-border bg-paper-card p-3 shadow-md dark:border-slate-600 dark:bg-slate-900 sm:p-5">
-          <div className="carousel w-full rounded-xl bg-sky-900">
+          <div className="carousel w-full rounded-xl bg-[#f2eadd] dark:bg-sky-900">
             <div id="item1" className="carousel-item aspect-square w-full items-center justify-center">
               <img src={data.sprites.front_default ?? undefined} className="h-full w-full object-contain [image-rendering:pixelated]" alt={t(language, 'frontAlt', { name: data.name })} />
             </div>
