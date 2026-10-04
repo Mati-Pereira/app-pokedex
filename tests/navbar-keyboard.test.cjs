@@ -24,7 +24,7 @@ function load(relative) {
   loaded.require = (name) => {
     if (name === 'next/router') return { useRouter: () => router };
     if (name === 'next/link') return { __esModule: true, default: ({ children }) => children };
-    if (name === 'react-windowed-select') return { __esModule: true, default: MockSelect, createFilter: () => () => true };
+    if (name === 'react-select') return { __esModule: true, default: MockSelect, components: {}, createFilter: () => () => true };
     if (name === '../context/InputPokemon') return { InputContext: context };
     if (name === './Toggle') return { __esModule: true, default: () => null };
     if (name === './SearchField') return load('components/SearchField.tsx');

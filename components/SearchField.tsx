@@ -1,7 +1,16 @@
 import { Ring } from '@uiball/loaders';
-import { KeyboardEvent, useState } from 'react';
+import {
+  Children,
+  isValidElement,
+  KeyboardEvent,
+  ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
-import WindowedSelect, { createFilter } from 'react-windowed-select';
+import Select, { components, createFilter, MenuListProps } from 'react-select';
+import { List, ListImperativeAPI, RowComponentProps } from 'react-window';
 
 export interface SelectOption {
   label: string;
@@ -26,7 +35,46 @@ interface SearchFieldProps {
   onSearch: () => void;
 }
 
-const filterOption = createFilter({ ignoreAccents: false, trim: true });
+const filterOption = createFilter<SelectOption>({ ignoreAccents: false, trim: true });
+const optionHeight = 35;
+
+interface MenuRowProps {
+  children: ReactNode[];
+}
+
+function MenuRow({ index, style, children }: RowComponentProps<MenuRowProps>) {
+  return <div style={style}>{children[index]}</div>;
+}
+
+function VirtualizedMenuList(props: MenuListProps<SelectOption, false>) {
+  const children = Children.toArray(props.children);
+  const focusedIndex = children.findIndex(
+    child => isValidElement(child) && (child.props as { isFocused?: boolean }).isFocused
+  );
+  const listRef = useRef<ListImperativeAPI | null>(null);
+
+  useEffect(() => {
+    if (focusedIndex >= 0) listRef.current?.scrollToRow({ index: focusedIndex, align: 'smart' });
+  }, [focusedIndex, listRef]);
+
+  const height = Math.min(props.maxHeight, children.length * optionHeight);
+
+  return (
+    <components.MenuList {...props}>
+      <List
+        listRef={listRef}
+        defaultHeight={height}
+        rowComponent={MenuRow}
+        rowCount={children.length}
+        rowHeight={optionHeight}
+        rowProps={{ children }}
+        overscanCount={5}
+        role="presentation"
+        style={{ height, width: '100%' }}
+      />
+    </components.MenuList>
+  );
+}
 
 function SearchField({
   instanceId,
@@ -53,13 +101,13 @@ function SearchField({
 
   return (
     <div className="flex items-stretch">
-      <WindowedSelect
+      <Select<SelectOption, false>
         instanceId={instanceId}
         isLoading={isLoadingOptions}
         options={options}
         {...selectProps}
-        windowThreshold={50}
         filterOption={filterOption}
+        components={{ MenuList: VirtualizedMenuList }}
         onChange={(option: unknown) => {
           if (option) onSelect(option as SelectOption);
         }}
