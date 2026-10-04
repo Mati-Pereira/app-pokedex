@@ -12,7 +12,7 @@ function MockSelect() { return null; }
 function MockLoader() { return null; }
 const context = React.createContext({ updateInput() {} });
 const router = { isReady: true, pathname: '/types', query: { type: 'fire' }, push: async () => true };
-function load(relative) {
+function loadModule(relative) {
   const filename = path.resolve(__dirname, '..', relative);
   const loaded = new Module(filename, module);
   loaded.filename = filename;
@@ -27,6 +27,7 @@ function load(relative) {
     if (name === 'react-responsive-pagination') return { __esModule: true, default: MockPagination };
     if (name === 'react-windowed-select') return { __esModule: true, default: MockSelect, createFilter: () => () => true };
     if (name === '../context/InputPokemon') return { InputContext: context };
+    if (name === './SearchField') return { __esModule: true, default: loadModule('components/SearchField.tsx') };
     if (name === './Toggle') return { __esModule: true, default: () => null };
     if (name === '@uiball/loaders') return { Waveform: MockLoader, Ring: MockLoader };
     return originalRequire(name);
@@ -36,6 +37,7 @@ function load(relative) {
   }).outputText, filename);
   return loaded.exports.default;
 }
+const load = loadModule;
 const components = { list: load('pages/index.tsx'), type: load('pages/types.tsx'), names: load('components/Navbar.tsx') };
 const response = data => ({ ok: true, status: 200, json: async () => data });
 const detail = { id: 1, name: 'charmander', types: [], sprites: { front_default: 'sprite.png' } };

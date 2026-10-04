@@ -12,24 +12,28 @@ let pushResult = () => Promise.resolve(true);
 const router = { isReady: true, pathname: "/", query: {}, push: (url) => { navigations.push(url); return pushResult(); } };
 const context = React.createContext({ updateInput() {} });
 function MockSelect() { return null; }
-const filename = path.resolve(__dirname, '../components/Navbar.tsx');
-const compiled = ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
-}).outputText;
-const loaded = new Module(filename, module);
-loaded.filename = filename;
-loaded.paths = Module._nodeModulePaths(path.dirname(filename));
-const originalRequire = loaded.require.bind(loaded);
-loaded.require = (name) => {
-  if (name === 'next/router') return { useRouter: () => router };
-  if (name === 'next/link') return { __esModule: true, default: ({ children }) => children };
-  if (name === 'react-windowed-select') return { __esModule: true, default: MockSelect, createFilter: () => () => true };
-  if (name === '../context/InputPokemon') return { InputContext: context };
-  if (name === './Toggle') return { __esModule: true, default: () => null };
-  return originalRequire(name);
-};
-loaded._compile(compiled, filename);
-const Navbar = loaded.exports.default;
+function load(relative) {
+  const filename = path.resolve(__dirname, '..', relative);
+  const compiled = ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
+  }).outputText;
+  const loaded = new Module(filename, module);
+  loaded.filename = filename;
+  loaded.paths = Module._nodeModulePaths(path.dirname(filename));
+  const originalRequire = loaded.require.bind(loaded);
+  loaded.require = (name) => {
+    if (name === 'next/router') return { useRouter: () => router };
+    if (name === 'next/link') return { __esModule: true, default: ({ children }) => children };
+    if (name === 'react-windowed-select') return { __esModule: true, default: MockSelect, createFilter: () => () => true };
+    if (name === '../context/InputPokemon') return { InputContext: context };
+    if (name === './Toggle') return { __esModule: true, default: () => null };
+    if (name === './SearchField') return load('components/SearchField.tsx');
+    return originalRequire(name);
+  };
+  loaded._compile(compiled, filename);
+  return loaded.exports;
+}
+const Navbar = load('components/Navbar.tsx').default;
 
 function keyEvent(key, composing = false) {
   return { key, nativeEvent: { isComposing: composing }, defaultPrevented: false,
