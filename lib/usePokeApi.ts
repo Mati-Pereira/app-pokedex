@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { NamedResource, PokemonListResponse, TypeResponse } from '../types/pokeapi';
 import type { PokemonDetails } from '../types/pokemonDetails';
+import { normalizePokemonDetails } from './pokemonDetails';
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
@@ -56,15 +57,7 @@ export function fetchPokemonDetails(
   return Promise.all(
     resources.map(async ({ url }) => {
       const detail = await getJson(url, signal, 'Pokemon');
-      if (
-        !isObject(detail) ||
-        typeof detail['name'] !== 'string' ||
-        !detail['sprites'] ||
-        !Array.isArray(detail['types'])
-      ) {
-        throw new Error('Invalid Pokemon response');
-      }
-      return detail as unknown as PokemonDetails;
+      return normalizePokemonDetails(detail);
     })
   );
 }

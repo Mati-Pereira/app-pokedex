@@ -92,7 +92,7 @@ const Types = () => {
         {pagePokemons?.map((pokemon: PokemonDetails) => (
           <Link href={`/${pokemon.name}`} key={pokemon.id}>
             <Pokemon
-              image={pokemon.sprites.front_default}
+              image={pokemon.sprites.front_default ?? ''}
               text={pokemon.name.toUpperCase()}
               types={pokemon.types}
             />
