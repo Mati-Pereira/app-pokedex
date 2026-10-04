@@ -57,7 +57,7 @@ function VirtualizedMenuList(props: MenuListProps<SelectOption, false>) {
     if (focusedIndex >= 0) listRef.current?.scrollToRow({ index: focusedIndex, align: 'smart' });
   }, [focusedIndex, listRef]);
 
-  const height = Math.min(props.maxHeight, children.length * optionHeight);
+  const height = Math.min(Math.max(0, props.maxHeight - 16), children.length * optionHeight);
 
   return (
     <components.MenuList {...props}>
@@ -109,6 +109,7 @@ function SearchField({
         {...selectProps}
         filterOption={filterOption}
         components={{ MenuList: VirtualizedMenuList }}
+        styles={{ menuList: base => ({ ...base, overflowY: 'hidden' } as typeof base) }}
         onChange={(option: unknown) => {
           if (option) onSelect(option as SelectOption);
         }}
