@@ -20,7 +20,8 @@
     "react-dom": "18.3.1",
     "react-icons": "^4.6.0",
     "react-responsive-pagination": "^1.8.1",
-    "react-windowed-select": "^5.1.0"
+    "react-select": "5.10.2",
+    "react-window": "2.3.3"
   },
   "devDependencies": {
     "@types/node": "24.19.1",

@@ -25,7 +25,7 @@ function loadModule(relative) {
     if (name === '../components/Pokemon') return { __esModule: true, default: MockPokemon };
     if (name === 'next/dynamic') return { __esModule: true, default: () => MockPagination };
     if (name === 'react-responsive-pagination') return { __esModule: true, default: MockPagination };
-    if (name === 'react-windowed-select') return { __esModule: true, default: MockSelect, createFilter: () => () => true };
+    if (name === 'react-select') return { __esModule: true, default: MockSelect, components: {}, createFilter: () => () => true };
     if (name === '../context/InputPokemon') return { InputContext: context };
     if (name === './SearchField') return { __esModule: true, default: loadModule('components/SearchField.tsx') };
     if (name === './Toggle') return { __esModule: true, default: () => null };

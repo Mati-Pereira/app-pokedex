@@ -25,9 +25,7 @@ export function normalizePokemonDetails(value: unknown): PokemonDetails {
     !abilities.every(entry => isObject(entry) && isNamedResource(entry['ability'])) ||
     !stats.every(
       entry =>
-        isObject(entry) &&
-        typeof entry['base_stat'] === 'number' &&
-        isNamedResource(entry['stat'])
+        isObject(entry) && typeof entry['base_stat'] === 'number' && isNamedResource(entry['stat'])
     ) ||
     !types.every(entry => isObject(entry) && isNamedResource(entry['type']))
   ) {
