@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { InputContext } from '../context/InputPokemon';
 import { useLanguage } from '../context/LanguageContext';
 import { fetchPokemonNames, usePokeApi } from '../lib/usePokeApi';
@@ -13,13 +13,37 @@ import Toggle from './Toggle';
 function Navbar() {
   const { updateInput } = useContext(InputContext);
   const { language, setLanguage } = useLanguage();
+  const [shouldLoadNames, setShouldLoadNames] = useState(false);
+  const loadNames = useCallback(() => setShouldLoadNames(true), []);
+
+  useEffect(() => {
+    type IdleScheduler = Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    const idleScheduler = window as IdleScheduler;
+    let idleHandle: number | undefined;
+    let timeoutHandle: number | undefined;
+
+    if (idleScheduler.requestIdleCallback) {
+      idleHandle = idleScheduler.requestIdleCallback(loadNames, { timeout: 2000 });
+    } else {
+      timeoutHandle = window.setTimeout(loadNames, 300);
+    }
+
+    return () => {
+      if (idleHandle !== undefined) idleScheduler.cancelIdleCallback?.(idleHandle);
+      if (timeoutHandle !== undefined) window.clearTimeout(timeoutHandle);
+    };
+  }, [loadNames]);
+
   const {
     data: pokemon,
     isLoading: namesLoading,
     error: namesError,
     retry: retryNames,
   } = usePokeApi(
-    'names',
+    shouldLoadNames ? 'names' : null,
     signal => fetchPokemonNames('https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0', signal),
     t(language, 'namesError')
   );
@@ -66,14 +90,22 @@ function Navbar() {
     );
   }, [router.isReady, router.pathname, router.query]);
 
-  const names: SelectOption[] | undefined = pokemon?.map(({ name }) => ({
-    label: name.charAt(0).toUpperCase() + name.slice(1),
-    value: name,
-  }));
-  const typeOptions: SelectOption[] = types.map(({ value }) => ({
-    value,
-    label: localizedType(language, value),
-  }));
+  const names: SelectOption[] | undefined = useMemo(
+    () =>
+      pokemon?.map(({ name }) => ({
+        label: name.charAt(0).toUpperCase() + name.slice(1),
+        value: name,
+      })),
+    [pokemon]
+  );
+  const typeOptions: SelectOption[] = useMemo(
+    () =>
+      types.map(({ value }) => ({
+        value,
+        label: localizedType(language, value),
+      })),
+    [language]
+  );
 
   return (
     <nav
@@ -94,6 +126,7 @@ function Navbar() {
             ariaLabel={t(language, 'nameField')}
             options={names}
             isLoadingOptions={namesLoading}
+            onFocus={loadNames}
             canSearch={!!inputName}
             isSearching={isLoadingName}
             isDisabled={isSearching}

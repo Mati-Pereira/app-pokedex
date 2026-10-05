@@ -6,6 +6,7 @@ const Module = require('node:module');
 const ts = require('typescript');
 const React = require('react');
 const { act, fireEvent, render, screen, waitFor } = require('./setup-dom.cjs');
+const { clearPokeApiCacheForTests } = require('../lib/usePokeApi.ts');
 let latestPageChange;
 function MockPokemon({ text }) { return React.createElement('article', { 'data-testid': 'pokemon' }, text); }
 function MockPagination({ current, total, onPageChange }) {
@@ -17,12 +18,13 @@ function MockPagination({ current, total, onPageChange }) {
     onClick: () => onPageChange(current < total ? current + 1 : 1),
   }, `Page ${current} of ${total}`);
 }
-function MockSelect({ instanceId, options, isLoading, onChange }) {
+function MockSelect({ instanceId, options, isLoading, onChange, onFocus }) {
   return React.createElement('input', {
     'aria-label': instanceId,
     'data-testid': `select-${instanceId}`,
     'data-option-count': options?.length ?? 0,
     'data-loading': String(!!isLoading),
+    onFocus,
     onChange: event => onChange({ value: event.target.value, label: event.target.value }),
   });
 }
@@ -60,10 +62,18 @@ const response = data => ({ ok: true, status: 200, json: async () => data });
 const detail = { id: 1, name: 'charmander', types: [], sprites: { front_default: 'sprite.png' } };
 function goodApi(kind, url) {
   if (kind === 'names') return response({ results: [{ name: 'charmander' }] });
-  if (url.includes('/type/')) return response({ pokemon: [{ pokemon: { url: 'https://example.test/pokemon/1' } }] });
-  if (url.includes('?offset=')) return response({ count: 27, results: [{ url: 'https://example.test/pokemon/1' }] });
+  if (url.includes('/type/')) return response({ pokemon: [{ pokemon: { name: 'charmander', url: 'https://pokeapi.co/api/v2/pokemon/charmander' } }] });
+  if (url.includes('?offset=')) return response({ count: 27, results: [{ name: 'charmander', url: 'https://pokeapi.co/api/v2/pokemon/charmander' }] });
   return response(detail);
 }
+const initialCatalog = {
+  count: 27,
+  pokemons: Array.from({ length: 9 }, (_, index) => ({
+    ...detail,
+    id: index + 1,
+    name: index === 0 ? 'charmander' : `initial-${index + 1}`,
+  })),
+};
 const failures = {
   http: async () => ({ ok: false, status: 503 }),
   network: async () => { throw new Error('Offline'); },
@@ -76,9 +86,12 @@ for (const kind of ['list', 'type', 'names']) {
       const originalFetch = global.fetch;
       let failing = true;
       let view;
+      clearPokeApiCacheForTests();
       global.fetch = url => failing ? badApi() : Promise.resolve(goodApi(kind, url));
       try {
-        view = render(React.createElement(components[kind]));
+        view = render(React.createElement(components[kind], kind === 'list' ? { initialData: initialCatalog } : {}));
+        if (kind === 'list') fireEvent.click(screen.getByTestId('pagination'));
+        if (kind === 'names') fireEvent.focus(screen.getByTestId('select-pokemon-name'));
         await waitFor(() => assert.ok(screen.getByRole('alert')));
         assert.equal(screen.queryByTestId('loader'), null);
         if (kind === 'names') assert.equal(screen.getByTestId('select-pokemon-name').dataset.loading, 'false');
@@ -103,9 +116,13 @@ for (const kind of ['list', 'type']) {
     for (const badDetail of [() => ({ ok: false, status: 500 }), () => response({ name: 'charmander' })]) {
       const originalFetch = global.fetch;
       let view;
-      global.fetch = async url => url.startsWith('https://example.test/') ? badDetail() : goodApi(kind, url);
+      clearPokeApiCacheForTests();
+      global.fetch = async url => url.startsWith('https://pokeapi.co/api/v2/pokemon/') && !url.includes('?')
+        ? badDetail()
+        : goodApi(kind, url);
       try {
-        view = render(React.createElement(components[kind]));
+        view = render(React.createElement(components[kind], kind === 'list' ? { initialData: initialCatalog } : {}));
+        if (kind === 'list') fireEvent.click(screen.getByTestId('pagination'));
         await waitFor(() => assert.ok(screen.getByRole('alert')));
         assert.equal(screen.queryByTestId('loader'), null);
         assert.equal(screen.queryAllByTestId('pokemon').length, 0);
@@ -122,16 +139,19 @@ for (const kind of ['list', 'type', 'names']) {
     let signal;
     let reject;
     let view;
+    clearPokeApiCacheForTests();
     global.fetch = (url, options) => {
       signal = options.signal;
       return new Promise((resolve, rejectPromise) => { reject = rejectPromise; });
     };
     try {
-      view = render(React.createElement(components[kind]));
+      view = render(React.createElement(components[kind], kind === 'list' ? { initialData: initialCatalog } : {}));
+      if (kind === 'list') fireEvent.click(screen.getByTestId('pagination'));
+      if (kind === 'names') fireEvent.focus(screen.getByTestId('select-pokemon-name'));
       await waitFor(() => assert.ok(signal));
       assert.equal(signal.aborted, false);
       view.unmount();
-      assert.equal(signal.aborted, true);
+      await waitFor(() => assert.equal(signal.aborted, true));
       await act(async () => { reject(new Error('Cancelled')); });
     } finally {
       global.fetch = originalFetch;
@@ -143,12 +163,13 @@ test('list ignores an old page response even when the API mock does not honor ca
   const originalFetch = global.fetch;
   let resolveOld;
   let view;
+  clearPokeApiCacheForTests();
   global.fetch = async url => {
     if (url.includes('offset=9&')) return new Promise(resolve => { resolveOld = resolve; });
     return goodApi('list', url);
   };
   try {
-    view = render(React.createElement(components.list));
+    view = render(React.createElement(components.list, { initialData: initialCatalog }));
     await waitFor(() => assert.equal(screen.getByTestId('pagination').dataset.current, '1'));
     const changePage = latestPageChange;
     await act(async () => { changePage(2); });

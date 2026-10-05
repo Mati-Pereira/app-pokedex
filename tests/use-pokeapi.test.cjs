@@ -6,6 +6,7 @@ const {
   fetchPokemonList,
   fetchPokemonNames,
   fetchPokemonDetails,
+  clearPokeApiCacheForTests,
 } = require('../lib/usePokeApi.ts');
 
 const ok = data => ({ ok: true, status: 200, json: async () => data });
@@ -32,6 +33,26 @@ test('loads data and clears the loading flag', async () => {
     },
     { data: 'value', isLoading: false, error: '' }
   );
+});
+
+test('does not retain a successful HTTP response that fails API schema validation', async () => {
+  const original = globalThis.fetch;
+  const url = 'https://pokeapi.co/api/v2/pokemon?offset=0&limit=validation-cache';
+  const signal = new AbortController().signal;
+  let calls = 0;
+  clearPokeApiCacheForTests();
+  globalThis.fetch = async () => {
+    calls += 1;
+    return ok(calls === 1 ? { count: 'wrong', results: [] } : { count: 0, results: [] });
+  };
+  try {
+    await assert.rejects(fetchPokemonList(url, signal), /Invalid Pokemon list/);
+    assert.deepEqual(await fetchPokemonList(url, signal), { count: 0, results: [] });
+    assert.equal(calls, 2);
+  } finally {
+    clearPokeApiCacheForTests();
+    globalThis.fetch = original;
+  }
 });
 
 test('reports the error message when loading fails', async () => {
@@ -103,16 +124,19 @@ test('fetch helpers reject HTTP errors and invalid bodies', async () => {
   const signal = new AbortController().signal;
   const original = globalThis.fetch;
   try {
+    const listUrl = 'https://pokeapi.co/api/v2/pokemon?offset=0&limit=9';
+    const namesUrl = 'https://pokeapi.co/api/v2/pokemon?offset=1&limit=9';
+    const detailsUrl = 'https://pokeapi.co/api/v2/pokemon/test-cache-validation';
     globalThis.fetch = async () => ({ ok: false, status: 503 });
-    await assert.rejects(fetchPokemonList('u', signal), /HTTP 503/);
+    await assert.rejects(fetchPokemonList(listUrl, signal), /HTTP 503/);
     globalThis.fetch = async () => ok({ count: -1, results: [] });
-    await assert.rejects(fetchPokemonList('u', signal), /Invalid Pokemon list/);
+    await assert.rejects(fetchPokemonList(listUrl, signal), /Invalid Pokemon list/);
     globalThis.fetch = async () => ok({ results: [{ name: 1 }] });
-    await assert.rejects(fetchPokemonNames('u', signal), /Invalid Pokemon names/);
+    await assert.rejects(fetchPokemonNames(namesUrl, signal), /Invalid Pokemon names/);
     globalThis.fetch = async () => ok({ name: 'x' });
-    await assert.rejects(fetchPokemonDetails([{ url: 'u' }], signal), /Invalid Pokemon response/);
+    await assert.rejects(fetchPokemonDetails([{ url: detailsUrl }], signal), /Invalid Pokemon response/);
     globalThis.fetch = async () => ok({ name: 'x', sprites: {}, types: [] });
-    assert.equal((await fetchPokemonDetails([{ url: 'u' }], signal))[0].name, 'x');
+    assert.equal((await fetchPokemonDetails([{ url: detailsUrl }], signal))[0].name, 'x');
   } finally {
     globalThis.fetch = original;
   }

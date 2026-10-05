@@ -28,6 +28,7 @@ interface SearchFieldProps {
   /** Controlled selection; omit to let the select manage its own value. */
   value?: SelectOption | null;
   isLoadingOptions?: boolean;
+  onFocus?: () => void;
   /** Whether a search can be started (something is selected). */
   canSearch: boolean;
   /** This field's own search is in flight. */
@@ -97,6 +98,7 @@ function SearchField({
   options,
   value,
   isLoadingOptions,
+  onFocus,
   canSearch,
   isSearching,
   isDisabled,
@@ -162,6 +164,7 @@ function SearchField({
           }),
         }}
         onChange={option => onSelect(option)}
+        onFocus={onFocus}
         onMenuOpen={() => setMenuOpen(true)}
         onMenuClose={() => setMenuOpen(false)}
         onKeyDown={handleKeyDown}

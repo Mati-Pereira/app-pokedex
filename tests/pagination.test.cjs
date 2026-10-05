@@ -6,6 +6,7 @@ const Module = require('node:module');
 const ts = require('typescript');
 const React = require('react');
 const { fireEvent, render, screen, waitFor } = require('./setup-dom.cjs');
+const { clearPokeApiCacheForTests } = require('../lib/usePokeApi.ts');
 function MockPokemon({ text }) { return React.createElement('article', { 'data-testid': 'pokemon' }, text); }
 function MockPagination({ current, total, onPageChange }) {
   return React.createElement('button', {
@@ -46,23 +47,37 @@ function load(relative) {
 
 const Index = load('pages/index.tsx');
 const response = data => ({ ok: true, status: 200, json: async () => data });
-async function setup(count, run) {
+async function setup(count, run, responseCount) {
+  const responseTotal = arguments.length >= 3 ? responseCount : count;
   const originalFetch = global.fetch;
   const requests = [];
   let view;
+  clearPokeApiCacheForTests();
   global.fetch = async url => {
     requests.push(url);
     if (url.includes('?offset=')) {
       const params = new URL(url).searchParams;
       const offset = Number(params.get('offset'));
-      const length = Number.isSafeInteger(count) && count >= 0 ? Math.max(0, Math.min(9, count - offset)) : 0;
-      return response({ count, results: Array.from({ length }, (_, i) => ({ url: 'https://example.test/' + (offset + i + 1) })) });
+      const length = Number.isSafeInteger(responseTotal) && responseTotal >= 0 ? Math.max(0, Math.min(9, responseTotal - offset)) : 0;
+      return response({ count: responseTotal, results: Array.from({ length }, (_, i) => ({ name: `pokemon-${offset + i + 1}`, url: `https://pokeapi.co/api/v2/pokemon/pokemon-${offset + i + 1}` })) });
     }
-    const id = Number(url.split('/').pop());
-    return response({ id, name: 'pokemon-' + id, types: [], sprites: { front_default: 'sprite.png' } });
+    const name = url.split('/').pop();
+    const id = Number(name.split('-').pop());
+    return response({ id, name, types: [], sprites: { front_default: 'sprite.png' } });
   };
   try {
-    view = render(React.createElement(Index));
+    const initialData = {
+      count,
+      pokemons: Array.from({ length: Number.isSafeInteger(count) && count > 0 ? Math.min(9, count) : 0 }, (_, index) => ({
+        id: index + 1,
+        name: `pokemon-${index + 1}`,
+        types: [],
+        abilities: [],
+        stats: [],
+        sprites: { front_default: 'sprite.png', back_default: null, front_shiny: null, back_shiny: null },
+      })),
+    };
+    view = render(React.createElement(Index, { initialData }));
     await run(view, requests);
   } finally {
     if (view) view.unmount();
@@ -92,11 +107,12 @@ test('last page requests the correct offset and displays only remaining Pokemon'
 });
 test('invalid API counts show the recoverable error instead of incorrect pagination', async () => {
   for (const count of [undefined, null, '19', -1, 1.5]) {
-    await setup(count, async () => {
+    await setup(19, async () => {
+      fireEvent.click(screen.getByTestId('pagination'));
       await waitFor(() => assert.ok(screen.getByRole('alert')));
       assert.equal(screen.queryByTestId('pagination'), null);
       assert.ok(screen.getByRole('button', { name: 'Tentar novamente' }));
-    });
+    }, count);
   }
 });
 
