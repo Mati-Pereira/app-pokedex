@@ -17,6 +17,7 @@ export default function Document() {
   return (
     <Html lang="pt-BR">
       <Head>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </Head>
       <body>
