@@ -10,10 +10,18 @@ export function clearPokeApiCacheForTests(): void {
   responseCache.clear();
 }
 
+export function invalidatePokeApiResponse(url: string): void {
+  responseCache.invalidate(url);
+}
+
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
-async function getJson(url: string, signal: AbortSignal, label: string): Promise<unknown> {
+export async function getPokeApiJson(
+  url: string,
+  signal: AbortSignal,
+  label: string
+): Promise<unknown> {
   try {
     return await responseCache.get(url, signal);
   } catch (error) {
@@ -28,7 +36,7 @@ export async function fetchPokemonList(
   url: string,
   signal: AbortSignal
 ): Promise<PokemonListResponse> {
-  const data = await getJson(url, signal, 'Pokemon list');
+  const data = await getPokeApiJson(url, signal, 'Pokemon list');
   if (
     !isObject(data) ||
     typeof data['count'] !== 'number' ||
@@ -37,9 +45,7 @@ export async function fetchPokemonList(
     !Array.isArray(data['results']) ||
     !data['results'].every(
       entry =>
-        isObject(entry) &&
-        typeof entry['name'] === 'string' &&
-        typeof entry['url'] === 'string'
+        isObject(entry) && typeof entry['name'] === 'string' && typeof entry['url'] === 'string'
     )
   ) {
     responseCache.invalidate(url);
@@ -52,7 +58,7 @@ export async function fetchPokemonNames(
   url: string,
   signal: AbortSignal
 ): Promise<{ name: string }[]> {
-  const data = await getJson(url, signal, 'Pokemon names');
+  const data = await getPokeApiJson(url, signal, 'Pokemon names');
   if (
     !isObject(data) ||
     !Array.isArray(data['results']) ||
@@ -65,7 +71,7 @@ export async function fetchPokemonNames(
 }
 
 export async function fetchTypeMembers(url: string, signal: AbortSignal): Promise<NamedResource[]> {
-  const data = await getJson(url, signal, 'Type');
+  const data = await getPokeApiJson(url, signal, 'Type');
   if (
     !isObject(data) ||
     !Array.isArray(data['pokemon']) ||
@@ -89,7 +95,7 @@ export function fetchPokemonDetails(
 ): Promise<PokemonDetails[]> {
   return Promise.all(
     resources.map(async resource => {
-      const detail = await getJson(resource.url, signal, 'Pokemon');
+      const detail = await getPokeApiJson(resource.url, signal, 'Pokemon');
       try {
         return normalizePokemonDetails(detail);
       } catch (error) {
