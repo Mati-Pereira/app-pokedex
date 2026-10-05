@@ -57,7 +57,7 @@ test('invalid successful responses fail before rendering details', async () => {
   }
 });
 
-test('valid details are preserved and the slug is URL encoded', async () => {
+test('valid details are preserved without runtime revalidation', async () => {
   const response = {
     name: 'bulbasaur',
     id: 1,
@@ -87,10 +87,10 @@ test('valid details are preserved and the slug is URL encoded', async () => {
     types: [{ type: { name: 'grass' } }],
   };
   await withFetch(async (url) => {
-    assert.equal(url, 'https://pokeapi.co/api/v2/pokemon/bulbasaur%2Fextra');
+    assert.equal(url, 'https://pokeapi.co/api/v2/pokemon/bulbasaur');
     return { status: 200, ok: true, json: async () => response };
   }, async () => {
-    assert.deepEqual(await getStaticProps({ params: { slug: 'bulbasaur/extra' } }), { props: { data }, revalidate: 86400 });
+    assert.deepEqual(await getStaticProps({ params: { slug: 'bulbasaur' } }), { props: { data } });
   });
 });
 
@@ -100,21 +100,33 @@ test('network failures remain observable', async () => {
   });
 });
 
-test('getStaticPaths pre-renders only a small, bounded set of Pokemon', async () => {
+test('getStaticPaths pre-renders all valid Pokemon and disables runtime fallback', async () => {
   await withFetch(async (url) => {
-    assert.match(url, /limit=50$/);
-    return { ok: true, status: 200, json: async () => ({ results: [{ name: 'bulbasaur' }, { name: 1 }, null] }) };
+    assert.match(url, /limit=100000$/);
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        results: [
+          { name: 'bulbasaur' },
+          { name: 'mr-mime' },
+          { name: '../bad' },
+          { name: 1 },
+          null,
+        ],
+      }),
+    };
   }, async () => {
     assert.deepEqual(await getStaticPaths({}), {
-      paths: [{ params: { slug: 'bulbasaur' } }],
-      fallback: 'blocking',
+      paths: [{ params: { slug: 'bulbasaur' } }, { params: { slug: 'mr-mime' } }],
+      fallback: false,
     });
   });
 });
 
-test('getStaticPaths falls back to on-demand rendering when the API fails', async () => {
-  const warn = console.warn;
-  console.warn = () => {};
+test('getStaticPaths fails closed if the Pokemon catalog cannot be loaded', async () => {
+  const error = console.error;
+  console.error = () => {};
   try {
     for (const mock of [
       async () => ({ ok: false, status: 503 }),
@@ -122,8 +134,10 @@ test('getStaticPaths falls back to on-demand rendering when the API fails', asyn
       async () => { throw new Error('network down'); },
     ]) {
       await withFetch(mock, async () => {
-        assert.deepEqual(await getStaticPaths({}), { paths: [], fallback: 'blocking' });
+        await assert.rejects(getStaticPaths({}));
       });
     }
-  } finally { console.warn = warn; }
+  } finally {
+    console.error = error;
+  }
 });
