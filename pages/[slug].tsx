@@ -6,7 +6,9 @@ import { normalizePokemonDetails } from '../lib/pokemonDetails';
 import { PokemonDetails } from '../types/pokemonDetails';
 import { useLanguage } from '../context/LanguageContext';
 import { localizedStat, localizedType, t } from '../lib/i18n';
-const prerenderedPokemons = 50;
+import { isPokemonSlug } from '../lib/pokemonSlug';
+
+const pokemonNameLimit = 100000;
 interface DetailsProps {
   data: PokemonDetails;
 }
@@ -101,7 +103,7 @@ function Details({ data }: DetailsProps) {
 export default Details;
 export const getStaticProps: GetStaticProps = async context => {
   const slug = context.params ? context.params['slug'] : undefined;
-  if (typeof slug !== 'string' || !slug.trim()) {
+  if (!isPokemonSlug(slug)) {
     return { notFound: true };
   }
   const res = await pokeApiFetch(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(slug)}`);
@@ -120,25 +122,35 @@ export const getStaticProps: GetStaticProps = async context => {
     props: {
       data: details,
     },
-    // Pokemon data rarely changes; refresh cached pages at most once a day.
-    revalidate: 60 * 60 * 24,
   };
 };
 export const getStaticPaths: GetStaticPaths = async () => {
-  // Only the first Pokemon are pre-rendered; the rest are generated on first
-  // request (fallback: 'blocking') and then cached. If the API is unavailable
-  // at build time, the build still succeeds and every page is built on demand.
+  // Generate all known detail pages during the build. Disabling runtime fallback
+  // prevents arbitrary request paths from triggering server-side PokeAPI calls.
   try {
-    const res = await pokeApiFetch(`https://pokeapi.co/api/v2/pokemon?offset=0&limit=${prerenderedPokemons}`);
+    const res = await pokeApiFetch(
+      `https://pokeapi.co/api/v2/pokemon?offset=0&limit=${pokemonNameLimit}`
+    );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (!Array.isArray(data?.results)) throw new Error('Invalid Pokemon list response');
-    const paths = data.results
-      .filter((p: { name?: unknown }) => typeof p?.name === 'string')
-      .map((p: { name: string }) => ({ params: { slug: p.name } }));
-    return { paths, fallback: 'blocking' };
+    const paths = (data.results as unknown[]).flatMap(
+      (entry): { params: { slug: string } }[] => {
+        if (
+          typeof entry !== 'object' ||
+          entry === null ||
+          !('name' in entry) ||
+          !isPokemonSlug(entry.name)
+        ) {
+          return [];
+        }
+        return [{ params: { slug: entry.name } }];
+      }
+    );
+    if (paths.length === 0) throw new Error('Pokemon list is empty');
+    return { paths, fallback: false };
   } catch (error) {
-    console.warn('Skipping Pokemon pre-rendering:', error);
-    return { paths: [], fallback: 'blocking' };
+    console.error('Unable to load Pokemon paths during build:', error);
+    throw error;
   }
 };

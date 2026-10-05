@@ -1,11 +1,13 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const Module = require('node:module');
 const vm = require('node:vm');
 const ts = require('typescript');
 const React = require('react');
+const nextConfigModule = require('../next.config.js');
 const { fireEvent, render, screen } = require('./setup-dom.cjs');
 function load(relative) {
   const filename = path.resolve(__dirname, '..', relative);
@@ -19,7 +21,44 @@ function load(relative) {
 }
 const Document = load('pages/_document.tsx');
 const Toggle = load('components/Toggle.tsx');
-const script = Document().props.children[0].props.children.props.dangerouslySetInnerHTML.__html;
+const nextConfig = fs.readFileSync(path.resolve(__dirname, '../next.config.js'), 'utf8');
+const themeInitializer = Document().props.children[0].props.children;
+const script = themeInitializer.props.dangerouslySetInnerHTML.__html;
+test('document initializes the theme in the head before page content', () => {
+  assert.equal(themeInitializer.type, 'script');
+  assert.equal(themeInitializer.props.src, undefined);
+});
+test('CSP allows the exact static theme initializer by hash', () => {
+  const hash = crypto.createHash('sha256').update(script).digest('base64');
+  assert.ok(nextConfig.includes(`'sha256-${hash}'`));
+});
+test('production security headers are restrictive and HSTS is production-only on Vercel', async () => {
+  const originalNodeEnv = process.env.NODE_ENV;
+  const originalVercelEnv = process.env.VERCEL_ENV;
+  try {
+    process.env.NODE_ENV = 'production';
+    process.env.VERCEL_ENV = 'production';
+    const productionHeaders = (await nextConfigModule.headers())[0].headers;
+    const production = Object.fromEntries(productionHeaders.map(({ key, value }) => [key, value]));
+    assert.match(production['Content-Security-Policy'], /default-src 'self'/);
+    assert.match(production['Content-Security-Policy'], /frame-ancestors 'none'/);
+    assert.equal(production['X-Content-Type-Options'], 'nosniff');
+    assert.equal(production['X-Frame-Options'], 'DENY');
+    assert.equal(production['Strict-Transport-Security'], 'max-age=31536000');
+
+    process.env.VERCEL_ENV = 'preview';
+    const previewHeaders = (await nextConfigModule.headers())[0].headers;
+    assert.equal(
+      previewHeaders.some(({ key }) => key === 'Strict-Transport-Security'),
+      false
+    );
+  } finally {
+    if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = originalNodeEnv;
+    if (originalVercelEnv === undefined) delete process.env.VERCEL_ENV;
+    else process.env.VERCEL_ENV = originalVercelEnv;
+  }
+});
 test('initial theme honors saved preference before rendering and otherwise follows the system', () => {
   for (const [saved, system, expected] of [['dark', false, true], ['light', true, false], [null, true, true], [null, false, false]]) {
     let applied;
