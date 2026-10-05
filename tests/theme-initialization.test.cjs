@@ -22,8 +22,17 @@ function load(relative) {
 const Document = load('pages/_document.tsx');
 const Toggle = load('components/Toggle.tsx');
 const nextConfig = fs.readFileSync(path.resolve(__dirname, '../next.config.js'), 'utf8');
-const themeInitializer = Document().props.children[0].props.children;
+const headChildren = React.Children.toArray(Document().props.children[0].props.children);
+const faviconLink = headChildren.find(child => child.type === 'link' && child.props.rel === 'icon');
+const themeInitializer = headChildren.find(child => child.type === 'script');
 const script = themeInitializer.props.dangerouslySetInnerHTML.__html;
+
+test('document includes the Pokeball SVG favicon', () => {
+  assert.equal(faviconLink.props.href, '/favicon.svg');
+  assert.equal(faviconLink.props.type, 'image/svg+xml');
+  assert.match(fs.readFileSync(path.resolve(__dirname, '../public/favicon.svg'), 'utf8'), /<svg\b/);
+});
+
 test('document initializes the theme in the head before page content', () => {
   assert.equal(themeInitializer.type, 'script');
   assert.equal(themeInitializer.props.src, undefined);
