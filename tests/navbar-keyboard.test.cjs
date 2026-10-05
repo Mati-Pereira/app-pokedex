@@ -6,6 +6,7 @@ const Module = require('node:module');
 const ts = require('typescript');
 const React = require('react');
 const { act, createEvent, fireEvent, render, screen, waitFor } = require('./setup-dom.cjs');
+const { clearPokeApiCacheForTests } = require('../lib/usePokeApi.ts');
 
 const navigations = [];
 let pushResult = () => Promise.resolve(true);
@@ -25,6 +26,7 @@ function MockSelect(props) {
       'aria-label': props['aria-label'],
       'data-testid': props.instanceId,
       value: selected,
+      onFocus: props.onFocus,
       onChange: choose,
       onKeyDown: props.onKeyDown,
     }),
@@ -225,6 +227,29 @@ test('clearing a selected name disables its search and clearing a type returns t
     if (view) view.unmount();
     router.pathname = '/';
     router.query = {};
+    global.fetch = originalFetch;
+  }
+});
+
+test('name options load on focus without a duplicate request from the idle prefetch', async () => {
+  const originalFetch = global.fetch;
+  const requestedUrls = [];
+  clearPokeApiCacheForTests();
+  global.fetch = async url => {
+    requestedUrls.push(url);
+    return { ok: true, status: 200, json: async () => ({ results: [{ name: 'pikachu' }] }) };
+  };
+  let view;
+  try {
+    view = render(React.createElement(Navbar));
+    assert.deepEqual(requestedUrls, []);
+    fireEvent.focus(screen.getByTestId('pokemon-name'));
+    await waitFor(() => assert.equal(requestedUrls.length, 1));
+    assert.equal(requestedUrls[0], 'https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0');
+    await act(async () => { await new Promise(resolve => global.setTimeout(resolve, 350)); });
+    assert.equal(requestedUrls.length, 1);
+  } finally {
+    if (view) view.unmount();
     global.fetch = originalFetch;
   }
 });

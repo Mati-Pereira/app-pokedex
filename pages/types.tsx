@@ -25,32 +25,37 @@ const Types = () => {
     typeof queryType === 'string' && types.some(option => option.value === queryType)
       ? queryType
       : '';
+  const [paginationType, setPaginationType] = useState(type);
+  const requestPage = paginationType === type ? currentPage : 1;
   const {
     data,
     isLoading: isFetching,
     error,
     retry,
   } = usePokeApi(
-    router.isReady && type ? `type:${type}` : null,
+    router.isReady && type ? `type:${type}:page:${requestPage}` : null,
     async signal => {
       const members = await fetchTypeMembers(
         `https://pokeapi.co/api/v2/type/${encodeURIComponent(type)}`,
         signal
       );
-      return fetchPokemonDetails(members, signal);
+      const offset = (requestPage - 1) * pokemonsPerPage;
+      const pageMembers = members.slice(offset, offset + pokemonsPerPage);
+      return {
+        count: members.length,
+        pokemons: await fetchPokemonDetails(pageMembers, signal),
+      };
     },
     t(language, 'typeError')
   );
   const isLoading = !router.isReady || isFetching;
-  const allPokemons = data ?? [];
-  const pageCount = Math.ceil(allPokemons.length / pokemonsPerPage);
-  const pagePokemons = allPokemons.slice(
-    (currentPage - 1) * pokemonsPerPage,
-    currentPage * pokemonsPerPage
-  );
+  const pagePokemons = data?.pokemons ?? [];
+  const totalPokemons = data?.count ?? 0;
+  const pageCount = Math.ceil(totalPokemons / pokemonsPerPage);
 
   useEffect(() => {
     setCurrentPage(1);
+    setPaginationType(type);
   }, [type]);
 
   const handlePageChange = (page: number) => setCurrentPage(page);
@@ -72,7 +77,7 @@ const Types = () => {
       </main>
     );
   }
-  if (!allPokemons.length) {
+  if (!isLoading && !error && (!type || (data && totalPokemons === 0))) {
     return (
       <main className="flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center gap-5 bg-paper px-5 py-10 text-center text-paper-ink dark:bg-slate-800 dark:text-white">
         <img src="sadPokemon1.png" alt="" aria-hidden="true" className="w-48 sm:w-60" />
@@ -89,15 +94,16 @@ const Types = () => {
     <main className="min-h-[calc(100vh-5rem)] bg-paper px-2 py-4 text-paper-ink shadow-xl ring-1 ring-slate-900/5 dark:bg-slate-800 dark:text-slate-50 sm:px-4 sm:py-6">
       <h1 className="px-2 text-xl font-extrabold text-slate-900 dark:text-white">{t(language, 'typeHeading', { type: localizedType(language, type) })}</h1>
       <p className="px-2 pt-1 text-sm text-paper-muted dark:text-slate-300" aria-live="polite">
-        {t(language, 'showing', { start: (currentPage - 1) * pokemonsPerPage + 1, end: Math.min(currentPage * pokemonsPerPage, allPokemons.length), total: allPokemons.length })}
+        {t(language, 'showing', { start: (currentPage - 1) * pokemonsPerPage + 1, end: Math.min(currentPage * pokemonsPerPage, totalPokemons), total: totalPokemons })}
       </p>
       <Grid>
-        {pagePokemons?.map((pokemon: PokemonDetails) => (
+        {pagePokemons?.map((pokemon: PokemonDetails, index: number) => (
           <Link href={`/${pokemon.name}`} key={pokemon.id} aria-label={t(language, 'viewDetails', { name: pokemon.name })} className="rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-pokedex dark:focus-visible:outline-blue-700">
             <Pokemon
               image={pokemon.sprites.front_default ?? ''}
               text={pokemon.name.toUpperCase()}
               types={pokemon.types}
+              priority={index === 0}
             />
           </Link>
         ))}

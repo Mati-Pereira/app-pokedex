@@ -1,11 +1,13 @@
 import { Waveform } from "@uiball/loaders";
-import type { NextPage } from "next";
+import type { GetStaticProps, NextPage } from "next";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import Grid from "../components/Grid";
 import Pokemon from "../components/Pokemon";
 import { fetchPokemonDetails, fetchPokemonList, usePokeApi } from "../lib/usePokeApi";
+import { getPokemonCatalogPage } from "../lib/pokemonCatalog";
+import type { PokemonCatalogPage } from "../lib/pokemonCatalog";
 import type { PokemonDetails } from "../types/pokemonDetails";
 import { useLanguage } from "../context/LanguageContext";
 import { t } from "../lib/i18n";
@@ -13,14 +15,18 @@ import { t } from "../lib/i18n";
 const Pagination = dynamic(() => import("react-responsive-pagination"), { ssr: false });
 
 const pokemonsPerPage = 9;
+const catalogRevalidateSeconds = 6 * 60 * 60;
 
-const Index: NextPage = () => {
+interface IndexProps {
+  initialData: PokemonCatalogPage;
+}
+
+const Index: NextPage<IndexProps> = ({ initialData }) => {
   const { language } = useLanguage();
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalOfPokemons, setTotalOfPokemons] = useState(0);
   const offset = (currentPage - 1) * pokemonsPerPage;
-  const { data, isLoading, error, retry } = usePokeApi(
-    `list:${offset}`,
+  const pageRequest = usePokeApi(
+    offset === 0 ? null : `list:${offset}`,
     async signal => {
       const list = await fetchPokemonList(
         `https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${pokemonsPerPage}`,
@@ -30,13 +36,12 @@ const Index: NextPage = () => {
     },
     t(language, 'catalogError')
   );
+  const data = offset === 0 ? initialData : pageRequest.data;
+  const isLoading = offset !== 0 && pageRequest.isLoading;
+  const error = offset === 0 ? '' : pageRequest.error;
   const pokemons = data?.pokemons ?? [];
-  const totalCount = data?.count ?? totalOfPokemons;
+  const totalCount = data?.count ?? initialData.count;
   const pageCount = Math.ceil(totalCount / pokemonsPerPage);
-
-  useEffect(() => {
-    if (data) setTotalOfPokemons(data.count);
-  }, [data]);
 
   const handlePageChange = (page: number) => setCurrentPage(page);
 
@@ -52,7 +57,7 @@ const Index: NextPage = () => {
     return (
       <main className="min-h-[50vh] bg-paper px-6 py-8 text-paper-ink dark:bg-slate-800 dark:text-slate-50">
         <p role="alert">{error}</p>
-        <button type="button" className="btn mt-4 bg-pokedex text-white hover:bg-pokedex-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pokedex dark:bg-blue-800 dark:hover:bg-blue-900 dark:focus-visible:outline-blue-700" onClick={retry}>{t(language, 'retry')}</button>
+        <button type="button" className="btn mt-4 bg-pokedex text-white hover:bg-pokedex-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pokedex dark:bg-blue-800 dark:hover:bg-blue-900 dark:focus-visible:outline-blue-700" onClick={pageRequest.retry}>{t(language, 'retry')}</button>
       </main>
     );
   }
@@ -65,9 +70,9 @@ const Index: NextPage = () => {
             {t(language, 'showing', { start: offset + 1, end: Math.min(offset + pokemons.length, totalCount), total: totalCount })}
           </p>
           <Grid>
-            {pokemons.map((pokemon: PokemonDetails) => (
+            {pokemons.map((pokemon: PokemonDetails, index: number) => (
               <Link href={`/${pokemon.name}`} key={pokemon.id} aria-label={t(language, 'viewDetails', { name: pokemon.name })} className="group rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-pokedex dark:focus-visible:outline-blue-700">
-                <Pokemon image={pokemon.sprites.front_default ?? ''} text={pokemon.name.toUpperCase()} types={pokemon.types} />
+                <Pokemon image={pokemon.sprites.front_default ?? ''} text={pokemon.name.toUpperCase()} types={pokemon.types} priority={index === 0} />
               </Link>
             ))}
           </Grid>
@@ -93,3 +98,10 @@ const Index: NextPage = () => {
 };
 
 export default Index;
+
+export const getStaticProps: GetStaticProps<IndexProps> = async () => ({
+  props: {
+    initialData: await getPokemonCatalogPage(0, pokemonsPerPage),
+  },
+  revalidate: catalogRevalidateSeconds,
+});

@@ -1,15 +1,27 @@
 import { useEffect, useRef, useState } from 'react';
 import type { NamedResource, PokemonListResponse, TypeResponse } from '../types/pokeapi';
 import type { PokemonDetails } from '../types/pokemonDetails';
+import { createPokeApiJsonCache } from './pokeApiCache';
 import { normalizePokemonDetails } from './pokemonDetails';
+
+const responseCache = createPokeApiJsonCache();
+
+export function clearPokeApiCacheForTests(): void {
+  responseCache.clear();
+}
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
 async function getJson(url: string, signal: AbortSignal, label: string): Promise<unknown> {
-  const res = await fetch(url, { signal });
-  if (!res.ok) throw new Error(`${label} request failed: HTTP ${res.status}`);
-  return res.json();
+  try {
+    return await responseCache.get(url, signal);
+  } catch (error) {
+    if (error instanceof Error && /^HTTP \d+$/.test(error.message)) {
+      throw new Error(`${label} request failed: ${error.message}`, { cause: error });
+    }
+    throw error;
+  }
 }
 
 export async function fetchPokemonList(
@@ -22,8 +34,15 @@ export async function fetchPokemonList(
     typeof data['count'] !== 'number' ||
     !Number.isSafeInteger(data['count']) ||
     data['count'] < 0 ||
-    !Array.isArray(data['results'])
+    !Array.isArray(data['results']) ||
+    !data['results'].every(
+      entry =>
+        isObject(entry) &&
+        typeof entry['name'] === 'string' &&
+        typeof entry['url'] === 'string'
+    )
   ) {
+    responseCache.invalidate(url);
     throw new Error('Invalid Pokemon list response');
   }
   return data as unknown as PokemonListResponse;
@@ -39,6 +58,7 @@ export async function fetchPokemonNames(
     !Array.isArray(data['results']) ||
     !data['results'].every(entry => isObject(entry) && typeof entry['name'] === 'string')
   ) {
+    responseCache.invalidate(url);
     throw new Error('Invalid Pokemon names response');
   }
   return data['results'] as { name: string }[];
@@ -46,7 +66,20 @@ export async function fetchPokemonNames(
 
 export async function fetchTypeMembers(url: string, signal: AbortSignal): Promise<NamedResource[]> {
   const data = await getJson(url, signal, 'Type');
-  if (!isObject(data) || !Array.isArray(data['pokemon'])) throw new Error('Invalid type response');
+  if (
+    !isObject(data) ||
+    !Array.isArray(data['pokemon']) ||
+    !data['pokemon'].every(
+      entry =>
+        isObject(entry) &&
+        isObject(entry['pokemon']) &&
+        typeof entry['pokemon']['name'] === 'string' &&
+        typeof entry['pokemon']['url'] === 'string'
+    )
+  ) {
+    responseCache.invalidate(url);
+    throw new Error('Invalid type response');
+  }
   return (data as unknown as TypeResponse).pokemon.map(entry => entry.pokemon);
 }
 
@@ -55,9 +88,14 @@ export function fetchPokemonDetails(
   signal: AbortSignal
 ): Promise<PokemonDetails[]> {
   return Promise.all(
-    resources.map(async ({ url }) => {
-      const detail = await getJson(url, signal, 'Pokemon');
-      return normalizePokemonDetails(detail);
+    resources.map(async resource => {
+      const detail = await getJson(resource.url, signal, 'Pokemon');
+      try {
+        return normalizePokemonDetails(detail);
+      } catch (error) {
+        responseCache.invalidate(resource.url);
+        throw error;
+      }
     })
   );
 }
