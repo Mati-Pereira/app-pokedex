@@ -19,7 +19,6 @@ const router = {
     return pushResult();
   },
 };
-const context = React.createContext({ updateInput() {} });
 function MockSelect(props) {
   const [localValue, setLocalValue] = React.useState('');
   const [menuOpen, setMenuOpen] = React.useState(false);
@@ -91,7 +90,6 @@ function load(relative) {
         components: {},
         createFilter: () => () => true,
       };
-    if (name === '../context/InputPokemon') return { InputContext: context };
     if (name === './Toggle') return { __esModule: true, default: () => null };
     if (name === './SearchField') return load('components/SearchField.tsx');
     return originalRequire(name);

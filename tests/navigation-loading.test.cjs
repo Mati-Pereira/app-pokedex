@@ -23,7 +23,6 @@ const originalRequire = loaded.require.bind(loaded);
 loaded.require = name => {
   if (name === 'next/router') return { useRouter: () => ({ events }) };
   if (name === '../components/Navbar') return { __esModule: true, default: () => null };
-  if (name === '../context/InputPokemon') return { ContextInput: ({ children }) => children };
   if (name === '../styles/globals.css') return {};
   if (name === '@uiball/loaders') return { Waveform: () => null };
   return originalRequire(name);

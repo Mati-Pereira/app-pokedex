@@ -28,7 +28,6 @@ function MockSelect() {
 function MockLoader() {
   return React.createElement('span', { 'data-testid': 'loader' }, 'Loading');
 }
-const context = React.createContext({ updateInput() {} });
 const router = {
   isReady: true,
   pathname: '/types',
@@ -57,7 +56,6 @@ function load(relative) {
         components: {},
         createFilter: () => () => true,
       };
-    if (name === '../context/InputPokemon') return { InputContext: context };
     if (name === './Toggle') return { __esModule: true, default: () => null };
     if (name === '@uiball/loaders') return { Waveform: MockLoader, Ring: MockLoader };
     return originalRequire(name);

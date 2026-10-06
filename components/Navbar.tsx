@@ -1,8 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { InputContext } from '../context/InputPokemon';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { fetchPokemonNames, usePokeApi } from '../lib/usePokeApi';
 import { localizedType, t } from '../lib/i18n';
@@ -11,7 +10,6 @@ import SearchField, { SelectOption } from './SearchField';
 import Toggle from './Toggle';
 
 function Navbar() {
-  const { updateInput } = useContext(InputContext);
   const { language, setLanguage } = useLanguage();
   const [shouldLoadNames, setShouldLoadNames] = useState(false);
   const loadNames = useCallback(() => setShouldLoadNames(true), []);
@@ -66,7 +64,6 @@ function Navbar() {
     setLoading(true);
     setSearchError('');
     try {
-      updateInput(value);
       await router.push(href);
     } catch (error) {
       if (!(error && typeof error === 'object' && 'cancelled' in error && error.cancelled)) {

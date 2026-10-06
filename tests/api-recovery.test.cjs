@@ -37,7 +37,6 @@ function MockSelect({ instanceId, options, isLoading, onChange, onFocus }) {
 function MockLoader() {
   return React.createElement('span', { 'data-testid': 'loader' }, 'Loading');
 }
-const context = React.createContext({ updateInput() {} });
 const router = {
   isReady: true,
   pathname: '/types',
@@ -66,7 +65,6 @@ function loadModule(relative) {
         components: {},
         createFilter: () => () => true,
       };
-    if (name === '../context/InputPokemon') return { InputContext: context };
     if (name === './SearchField')
       return { __esModule: true, default: loadModule('components/SearchField.tsx') };
     if (name === './Toggle') return { __esModule: true, default: () => null };

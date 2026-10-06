@@ -3,7 +3,6 @@ import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
-import { ContextInput } from '../context/InputPokemon';
 import { LanguageProvider, useLanguage } from '../context/LanguageContext';
 import { t } from '../lib/i18n';
 import '../styles/globals.css';
@@ -44,11 +43,9 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [router.events]);
   return (
     <LanguageProvider>
-      <ContextInput>
-        <Navbar />
-        <Component {...pageProps} />
-        {isNavigating && <RouteLoading />}
-      </ContextInput>
+      <Navbar />
+      <Component {...pageProps} />
+      {isNavigating && <RouteLoading />}
     </LanguageProvider>
   );
 }
