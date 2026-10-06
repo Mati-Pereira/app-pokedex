@@ -137,7 +137,8 @@ function SearchField({
               ? t(language, 'selectionCleared')
               : t(language, 'selected', { label }),
           onFilter: ({ resultsMessage }) => resultsMessage,
-          onFocus: ({ label, isSelected }) => (isSelected ? `${label}, selecionado` : label),
+          onFocus: ({ label, isSelected }) =>
+            isSelected ? t(language, 'selectedOption', { label }) : label,
         }}
         components={{ MenuList: VirtualizedMenuList }}
         styles={{
