@@ -8,13 +8,13 @@ import Pokemon from '../components/Pokemon';
 import { fetchPokemonDetails, fetchPokemonList, usePokeApi } from '../lib/usePokeApi';
 import { getPokemonCatalogPage } from '../lib/pokemonCatalog';
 import type { PokemonCatalogPage } from '../lib/pokemonCatalog';
+import { getPageCount, getPageOffset, pokemonsPerPage } from '../lib/pagination';
 import type { PokemonDetails } from '../types/pokemonDetails';
 import { useLanguage } from '../context/LanguageContext';
 import { t } from '../lib/i18n';
 
 const Pagination = dynamic(() => import('react-responsive-pagination'), { ssr: false });
 
-const pokemonsPerPage = 9;
 const catalogRevalidateSeconds = 6 * 60 * 60;
 
 interface IndexProps {
@@ -24,7 +24,7 @@ interface IndexProps {
 const Index: NextPage<IndexProps> = ({ initialData }) => {
   const { language } = useLanguage();
   const [currentPage, setCurrentPage] = useState(1);
-  const offset = (currentPage - 1) * pokemonsPerPage;
+  const offset = getPageOffset(currentPage);
   const pageRequest = usePokeApi(
     offset === 0 ? null : `list:${offset}`,
     async signal => {
@@ -41,7 +41,7 @@ const Index: NextPage<IndexProps> = ({ initialData }) => {
   const error = offset === 0 ? '' : pageRequest.error;
   const pokemons = data?.pokemons ?? [];
   const totalCount = data?.count ?? initialData.count;
-  const pageCount = Math.ceil(totalCount / pokemonsPerPage);
+  const pageCount = getPageCount(totalCount);
 
   const handlePageChange = (page: number) => setCurrentPage(page);
 

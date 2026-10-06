@@ -11,10 +11,9 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { useLanguage } from '../context/LanguageContext';
 import { localizedType, t } from '../lib/i18n';
+import { getPageCount, getPageOffset, pokemonsPerPage } from '../lib/pagination';
 
 const Pagination = dynamic(() => import('react-responsive-pagination'), { ssr: false });
-
-const pokemonsPerPage = 9;
 
 const Types = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,7 +38,7 @@ const Types = () => {
         `https://pokeapi.co/api/v2/type/${encodeURIComponent(type)}`,
         signal
       );
-      const offset = (requestPage - 1) * pokemonsPerPage;
+      const offset = getPageOffset(requestPage);
       const pageMembers = members.slice(offset, offset + pokemonsPerPage);
       return {
         count: members.length,
@@ -51,7 +50,7 @@ const Types = () => {
   const isLoading = !router.isReady || isFetching;
   const pagePokemons = data?.pokemons ?? [];
   const totalPokemons = data?.count ?? 0;
-  const pageCount = Math.ceil(totalPokemons / pokemonsPerPage);
+  const pageCount = getPageCount(totalPokemons);
 
   useEffect(() => {
     setCurrentPage(1);
