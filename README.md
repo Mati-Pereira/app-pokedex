@@ -1,106 +1,119 @@
 # App Pokedex
 
-An app to look at the attributes of your favorite pokemon, such as its color in shiny mode
-
-## Authors
-
-- [@Mati-Pereira](https://www.github.com/Mati-Pereira)
-
-## Badges
+A Pokédex web app to browse Pokémon, filter by type, and inspect details such as sprites (including shiny), abilities, base stats and evolution chains.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 
-## Demo
-
-<https://app-pokedex-ashy.vercel.app/>
+Demo: <https://app-pokedex-ashy.vercel.app/>
 
 ## Features
 
-- Light/dark mode toggle
-- Search bar
-- Details Page
+- Catalog of Pokémon with pagination, served with ISR (revalidated every 6 hours).
+- Search by name with a virtualized, keyboard-friendly autocomplete.
+- Filter by type, persisted in the URL (`/types?type=fire`) so it survives reloads and can be shared.
+- Detail pages with a front/back/shiny sprite carousel, types, abilities, base stats and a lazy-loaded evolution chain (responsive branches plus a conditions panel).
+- Light/dark theme toggle that follows the system preference and persists across reloads.
+- Bilingual interface: Portuguese (default) and English, persisted across reloads.
+- Accessibility: keyboard navigation, ARIA live regions, visible focus styles and reduced-motion support.
+- Security headers and a strict Content-Security-Policy; PokeAPI requests are validated and restricted to the API origin.
 
-## Feedback
+## Tech stack
 
-If you have any feedback, please reach out to me at matheus-rodrigues37@live.com
+| Layer                 | Technology                                                                  |
+| --------------------- | --------------------------------------------------------------------------- |
+| Framework             | Next.js 16.3.8 (Pages Router)                                               |
+| UI                    | React 19.3.0, Tailwind CSS 4.3.3, daisyUI 5.7.47                            |
+| Language              | TypeScript 5.9.3 (strict)                                                   |
+| Data                  | [PokeAPI](https://pokeapi.co/)                                              |
+| Search and pagination | react-select 5.10.2, react-window 2.3.3, react-responsive-pagination 2.14.0 |
+| Testing               | Node.js test runner, jsdom, Testing Library                                 |
 
-## 🚀 About Me
+## Requirements
 
-Programming has always been a passion of mine, since college, I always thought of connecting my knowledge with new technologies, it was and is something very instinctive to me. I dedicate myself heart and soul to achieve my dream of being a FullStack Web Developer.
+- Node.js **24.x** (declared in `package.json` and `.nvmrc`)
+- npm **10.9.4** (locked through `packageManager`)
 
-## 🔗 Links
-
-[![portfolio](https://img.shields.io/badge/my_portfolio-000?style=for-the-badge&logo=ko-fi&logoColor=white)](https://portifolio-new-4q6j.vercel.app/)
-[![linkedin](https://img.shields.io/badge/linkedin-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/matheus-rodrigues-pereira/)
-
-## Lessons Learned
-
-I learned a lot about handling files that came from an external API, and how to display them to the end audience.
-
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
-
-## Runtime requirements
-
-Use Node.js **24.x LTS** and npm **10.9.4**. Node 24.19.0 is the version used for the local production checks. The project accepts newer minor and patch releases within Node 24; re-run the checks when updating the runtime.
-
-The Node major version is declared in `package.json` and `.nvmrc`. With nvm on macOS/Linux, run `nvm install` and `nvm use`. On Windows, select Node 24 with your preferred Node installer or version manager; `.nvmrc` does not automatically switch the runtime in every manager.
-
-Node 24 satisfies the published minimum Node requirements for the planned Next.js 14 and 16 steps. Each framework upgrade still requires its own validation. Vercel supports 24.x and reads `engines.node`; the deployed project's actual runtime has not been inspected or changed.
-
-References checked on October 3, 2026: [Node.js releases](https://nodejs.org/en/about/previous-releases), [Next.js 14 requirements](https://nextjs.org/docs/14/getting-started/installation), [Next.js 16 requirements](https://nextjs.org/docs/app/guides/upgrading/version-16), [Vercel Node.js versions](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions).
-
-## Run Locally
-
-Clone the project
+## Getting started
 
 ```bash
-  git clone https://github.com/Mati-Pereira/app-pokedex
+git clone https://github.com/Mati-Pereira/app-pokedex
+cd app-pokedex
+npm ci
+npm run dev
 ```
 
-Go to the project directory
+The dev server runs at http://localhost:3000.
+
+## Available scripts
+
+| Command                                   | Description                            |
+| ----------------------------------------- | -------------------------------------- |
+| `npm run dev`                             | Start the development server           |
+| `npm run build`                           | Create a production build              |
+| `npm start`                               | Serve the production build             |
+| `npm test`                                | Run the regression tests (`node:test`) |
+| `npm run typecheck`                       | Type-check without emitting            |
+| `npm run lint`                            | Run ESLint                             |
+| `npm run format` / `npm run format:check` | Apply / verify Prettier formatting     |
+
+Run a single test file:
 
 ```bash
-  cd app-pokedex
+node --require ./tests/ts-register.cjs --test tests/pagination.test.cjs
 ```
 
-Install dependencies
+## Project structure
 
-```bash
-  npm ci
+```
+pages/        Routes and page-level data loading (catalog, details, type filter)
+components/   Reusable UI (Navbar, SearchField, Grid, Pokemon, EvolutionChain, ...)
+context/      Shared React state (language)
+lib/          PokeAPI access, caches, validation, i18n and pagination helpers
+types/        Shared TypeScript models
+data/         Pokémon type values
+tests/        Regression tests (node:test + jsdom + Testing Library)
+docs/         Production baseline, modernization guide and dependency notes
 ```
 
-Run in dev mode
+## Data and network
 
-```bash
-  npm run dev
-```
+- All Pokémon data comes from [PokeAPI](https://pokeapi.co/); there is no local database.
+- `npm run build` fetches the catalog and pre-renders every detail page (~1,355 pages), so it needs network access and can take several minutes. The catalog uses ISR and revalidates every 6 hours.
+- Client-side search and type lists also require PokeAPI access.
+- Responses are cached in memory on the client (TTL/LRU with in-flight deduplication) and on disk in `.next/cache/pokeapi` during the build. Static generation concurrency is bounded in `next.config.js` to avoid overwhelming the API.
 
-## Validation and production
+## Validation
 
-Use npm 10.9.4 and commit changes to `package-lock.json`. The lockfile is the source of dependency versions; use `npm ci` for clean installations.
+Run the full suite before submitting changes:
 
 ```bash
 npm test
 npm run typecheck
 npm run lint
+npm run format:check
 npm run build
-npm start
 ```
 
-The production server runs at http://localhost:3000. The build currently fetches the Pokemon catalog and pre-renders all detail pages using PokeAPI, so it requires network access and may take several minutes or fail if the API is unavailable. Client-side search and lists also require PokeAPI access.
+Current status: 93 regression tests pass, together with typecheck, lint and format checks, and the build generates all 1,355 static pages. Results and known limitations are recorded in [docs/PRODUCTION_BASELINE.md](docs/PRODUCTION_BASELINE.md).
 
-Production verification results and remaining limitations are recorded in [docs/PRODUCTION_BASELINE.md](docs/PRODUCTION_BASELINE.md).
+## Deployment
 
-## Current dependency baseline
+The app is deployed on Vercel (see the demo link above) and reads the Node version from `engines.node`. Production responses include a strict Content-Security-Policy and other security headers configured in `next.config.js`; HSTS is added only on Vercel production.
 
-The installed baseline (see `package.json` and `package-lock.json`) is Next.js 16.3.8, React and React DOM 19.3.0, TypeScript 5.9.3, `@types/node` 24.19.1, Tailwind CSS 4.3.3 and daisyUI 5.7.47. The app keeps the Pages Router. A clean `npm ci` installation is required; the automated suite currently passes 93 regression tests, together with `npm run typecheck`, `npm run lint` and `npm run format:check`. `npm run build` generates all 1,355 static pages. Build and browser verification details are recorded in [docs/PRODUCTION_BASELINE.md](docs/PRODUCTION_BASELINE.md).
+## Documentation
 
-## Tech Stack
+- [docs/PRODUCTION_BASELINE.md](docs/PRODUCTION_BASELINE.md) — validated production behavior and limitations.
+- [docs/MODERNIZATION_GUIDELINE.md](docs/MODERNIZATION_GUIDELINE.md) — incremental upgrade plan and working conventions.
+- [docs/DEPENDENCY_COMPATIBILITY.md](docs/DEPENDENCY_COMPATIBILITY.md) — dependency compatibility notes.
+- [AGENTS.md](AGENTS.md) — repository guidelines for AI coding agents.
 
-**Client:** React, Next.js, TailwindCSS, Typescript
+## Author
 
-**Server:** Node
+- [@Mati-Pereira](https://www.github.com/Mati-Pereira)
+- [Portfolio](https://portifolio-new-4q6j.vercel.app/) · [LinkedIn](https://www.linkedin.com/in/matheus-rodrigues-pereira/)
 
-Static generation still fetches the Pokemon catalog and pre-renders every detail page, so it requires network access and can take several minutes. Static generation concurrency is bounded in `next.config.js` after PokeAPI connection timeouts; see the production baseline for the current status and experimental configuration limitations.
+Feedback and questions: matheus-rodrigues37@live.com
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
