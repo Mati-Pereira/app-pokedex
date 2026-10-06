@@ -12,7 +12,11 @@ function MockPagination() {
 }
 
 function MockPokemon({ text, priority }) {
-  return React.createElement('article', { 'data-testid': 'pokemon', 'data-priority': String(priority) }, text);
+  return React.createElement(
+    'article',
+    { 'data-testid': 'pokemon', 'data-priority': String(priority) },
+    text
+  );
 }
 
 function loadIndex() {
@@ -24,7 +28,8 @@ function loadIndex() {
   loaded.require = name => {
     if (name === 'next/link') return { __esModule: true, default: ({ children }) => children };
     if (name === 'next/dynamic') return { __esModule: true, default: () => MockPagination };
-    if (name === '../components/Grid') return { __esModule: true, default: ({ children }) => children };
+    if (name === '../components/Grid')
+      return { __esModule: true, default: ({ children }) => children };
     if (name === '../components/Pokemon') return { __esModule: true, default: MockPokemon };
     if (name === '@uiball/loaders') return { Waveform: () => null };
     if (name === '../context/LanguageContext') {
@@ -32,9 +37,16 @@ function loadIndex() {
     }
     return originalRequire(name);
   };
-  loaded._compile(ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
-  }).outputText, filename);
+  loaded._compile(
+    ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        jsx: ts.JsxEmit.ReactJSX,
+        esModuleInterop: true,
+      },
+    }).outputText,
+    filename
+  );
   return loaded.exports;
 }
 
@@ -60,10 +72,7 @@ test('home is statically populated and revalidates after six hours', async () =>
         status: 200,
         json: async () => ({
           count: 1500,
-          results: [
-            { name: 'bulbasaur' },
-            { name: 'ivysaur' },
-          ],
+          results: [{ name: 'bulbasaur' }, { name: 'ivysaur' }],
         }),
       };
     }
@@ -76,13 +85,15 @@ test('home is statically populated and revalidates after six hours', async () =>
     const result = await getStaticProps({});
     assert.equal(result.revalidate, 6 * 60 * 60);
     assert.equal(result.props.initialData.count, 1500);
-    assert.deepEqual(result.props.initialData.pokemons.map(pokemon => pokemon.name), [
-      'bulbasaur',
-      'ivysaur',
-    ]);
+    assert.deepEqual(
+      result.props.initialData.pokemons.map(pokemon => pokemon.name),
+      ['bulbasaur', 'ivysaur']
+    );
     assert.equal(requests.length, 3);
 
-    global.fetch = async () => { throw new Error('Initial page should not fetch in the browser'); };
+    global.fetch = async () => {
+      throw new Error('Initial page should not fetch in the browser');
+    };
     const view = render(React.createElement(Index, { initialData: result.props.initialData }));
     assert.equal(screen.getAllByTestId('pokemon').length, 2);
     assert.equal(screen.getAllByTestId('pokemon')[0].dataset.priority, 'true');

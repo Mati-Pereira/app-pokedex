@@ -19,19 +19,28 @@ loaded.require = name => {
   }
   return originalRequire(name);
 };
-loaded._compile(ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
-}).outputText, filename);
+loaded._compile(
+  ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      jsx: ts.JsxEmit.ReactJSX,
+      esModuleInterop: true,
+    },
+  }).outputText,
+  filename
+);
 const Pokemon = loaded.exports.default;
 
 test('prioritizes the first visible sprite and keeps other card images lazy', () => {
   const types = [];
-  const first = render(React.createElement(Pokemon, {
-    image: '/first.png',
-    text: 'BULBASAUR',
-    types,
-    priority: true,
-  }));
+  const first = render(
+    React.createElement(Pokemon, {
+      image: '/first.png',
+      text: 'BULBASAUR',
+      types,
+      priority: true,
+    })
+  );
   const firstImage = screen.getByRole('img');
   assert.equal(firstImage.getAttribute('loading'), 'eager');
   assert.equal(firstImage.getAttribute('fetchpriority'), 'high');

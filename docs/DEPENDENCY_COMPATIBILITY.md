@@ -10,15 +10,15 @@ The npm next-14 tags currently resolve Next.js and eslint-config-next to 14.2.35
 - eslint-config-next 14.2.35 accepts ESLint ^7.23.0 or ^8.0.0 and TypeScript >=3.3.1. The current ESLint 8.28.0 and TypeScript 5.9.3 satisfy these declared requirements.
 - No peer dependency conflict was identified in the libraries below for React 18.2.0. This does not guarantee behavior after a framework upgrade.
 
-| Package | Installed | Use | Declared React compatibility | React 19 follow-up |
-| --- | --- | --- | --- | --- |
-| react-windowed-select | 5.1.0 | Header search selectors | 16.8, 17, 18 | Latest queried 5.2.0 still excludes 19; resolve before adopting React 19. |
-| react-select | 5.7.0 | Dependency of windowed select | 16.8, 17, 18 | Latest queried 5.10.2 includes 19, but updating it alone does not resolve the wrapper's peer range. |
-| react-responsive-pagination | 1.8.1 | Main/type list pagination | 16.8, 17, 18 | Latest queried 2.14.0 includes 19; a major upgrade needs its own layout and API review. |
-| @uiball/loaders | 1.2.6 | Navigation, list and search feedback | >=16.8 | Range accepts 19, but runtime behavior must be tested; latest queried 1.3.1. |
-| react-icons | 4.6.0 | Header search icons | Any React version | Broad peer range alone is not proof of React 19 behavior; latest queried 5.7.0. |
-| react-test-renderer | 18.2.0 | Regression test renderer | ^18.2.0 | Keep aligned with React; review the test approach before React 19. Latest queried 19.3.0 is not a drop-in upgrade while React remains 18. |
-| @tanstack/react-query | 4.16.1 | No application imports found | 16.8, 17, 18 | Decide whether to remove it in a separate step; do not update an unused dependency as part of this migration. |
+| Package                     | Installed | Use                                  | Declared React compatibility | React 19 follow-up                                                                                                                        |
+| --------------------------- | --------- | ------------------------------------ | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| react-windowed-select       | 5.1.0     | Header search selectors              | 16.8, 17, 18                 | Latest queried 5.2.0 still excludes 19; resolve before adopting React 19.                                                                 |
+| react-select                | 5.7.0     | Dependency of windowed select        | 16.8, 17, 18                 | Latest queried 5.10.2 includes 19, but updating it alone does not resolve the wrapper's peer range.                                       |
+| react-responsive-pagination | 1.8.1     | Main/type list pagination            | 16.8, 17, 18                 | Latest queried 2.14.0 includes 19; a major upgrade needs its own layout and API review.                                                   |
+| @uiball/loaders             | 1.2.6     | Navigation, list and search feedback | >=16.8                       | Range accepts 19, but runtime behavior must be tested; latest queried 1.3.1.                                                              |
+| react-icons                 | 4.6.0     | Header search icons                  | Any React version            | Broad peer range alone is not proof of React 19 behavior; latest queried 5.7.0.                                                           |
+| react-test-renderer         | 18.2.0    | Regression test renderer             | ^18.2.0                      | Keep aligned with React; review the test approach before React 19. Latest queried 19.3.0 is not a drop-in upgrade while React remains 18. |
+| @tanstack/react-query       | 4.16.1    | No application imports found         | 16.8, 17, 18                 | Decide whether to remove it in a separate step; do not update an unused dependency as part of this migration.                             |
 
 Tailwind 3.2.4 and daisyUI 2.43.0 do not declare React peers. Their declared PostCSS/autoprefixer requirements are satisfied by the installed tooling. Their modernization remains a separate visual validation step.
 

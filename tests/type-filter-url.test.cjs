@@ -10,15 +10,23 @@ const { clearPokeApiCacheForTests } = require('../lib/usePokeApi.ts');
 const router = { isReady: true, query: {} };
 const requests = [];
 function MockPagination({ current, total, onPageChange }) {
-  return React.createElement('button', {
-    'data-testid': 'pagination',
-    'data-current': current,
-    'data-total': total,
-    onClick: () => onPageChange(current < total ? current + 1 : 1),
-  }, `Page ${current} of ${total}`);
+  return React.createElement(
+    'button',
+    {
+      'data-testid': 'pagination',
+      'data-current': current,
+      'data-total': total,
+      onClick: () => onPageChange(current < total ? current + 1 : 1),
+    },
+    `Page ${current} of ${total}`
+  );
 }
 function MockPokemon({ text, priority }) {
-  return React.createElement('article', { 'data-testid': 'pokemon', 'data-priority': String(priority) }, text);
+  return React.createElement(
+    'article',
+    { 'data-testid': 'pokemon', 'data-priority': String(priority) },
+    text
+  );
 }
 const filename = path.resolve(__dirname, '../pages/types.tsx');
 const loaded = new Module(filename, module);
@@ -28,22 +36,37 @@ const originalRequire = loaded.require.bind(loaded);
 loaded.require = name => {
   if (name === 'next/router') return { useRouter: () => router };
   if (name === 'next/link') return { __esModule: true, default: ({ children }) => children };
-  if (name === '../components/Grid') return { __esModule: true, default: ({ children }) => children };
+  if (name === '../components/Grid')
+    return { __esModule: true, default: ({ children }) => children };
   if (name === '../components/Pokemon') return { __esModule: true, default: MockPokemon };
-    if (name === 'next/dynamic') return { __esModule: true, default: () => MockPagination };
-    if (name === 'react-responsive-pagination') return { __esModule: true, default: MockPagination };
+  if (name === 'next/dynamic') return { __esModule: true, default: () => MockPagination };
+  if (name === 'react-responsive-pagination') return { __esModule: true, default: MockPagination };
   return originalRequire(name);
 };
-loaded._compile(ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
-}).outputText, filename);
+loaded._compile(
+  ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      jsx: ts.JsxEmit.ReactJSX,
+      esModuleInterop: true,
+    },
+  }).outputText,
+  filename
+);
 const Types = loaded.exports.default;
 const response = data => ({ ok: true, status: 200, json: async () => data });
 async function api(url) {
   requests.push(url);
   if (url.includes('/type/')) {
     const type = url.split('/').pop();
-    return response({ pokemon: Array.from({ length: 12 }, (_, i) => ({ pokemon: { name: `${type}-${i + 1}`, url: `https://pokeapi.co/api/v2/pokemon/${type}-${i + 1}` } })) });
+    return response({
+      pokemon: Array.from({ length: 12 }, (_, i) => ({
+        pokemon: {
+          name: `${type}-${i + 1}`,
+          url: `https://pokeapi.co/api/v2/pokemon/${type}-${i + 1}`,
+        },
+      })),
+    });
   }
   const name = url.split('/').pop();
   const id = Number(name.split('-').pop());
@@ -121,7 +144,9 @@ test('changing type or returning to a previous type resets pagination and visibl
     for (const type of ['water', 'fire']) {
       router.query = { type };
       view.rerender(React.createElement(Types));
-      await waitFor(() => assert.equal(screen.getAllByTestId('pokemon')[0].textContent, `${type.toUpperCase()}-1`));
+      await waitFor(() =>
+        assert.equal(screen.getAllByTestId('pokemon')[0].textContent, `${type.toUpperCase()}-1`)
+      );
       assert.equal(screen.getByTestId('pagination').dataset.current, '1');
     }
   });
@@ -131,15 +156,23 @@ test('a stale type response cannot replace results for the current URL', async (
   await setup({ type: 'fire' }, true, async view => {
     await waitFor(() => assert.equal(screen.getAllByTestId('pokemon')[0].textContent, 'FIRE-1'));
     let resolveIce;
-    global.fetch = url => url.endsWith('/type/ice')
-      ? new Promise(resolve => { resolveIce = resolve; }) : api(url);
+    global.fetch = url =>
+      url.endsWith('/type/ice')
+        ? new Promise(resolve => {
+            resolveIce = resolve;
+          })
+        : api(url);
     router.query = { type: 'ice' };
     view.rerender(React.createElement(Types));
     router.query = { type: 'water' };
     view.rerender(React.createElement(Types));
     await waitFor(() => assert.equal(screen.getAllByTestId('pokemon')[0].textContent, 'WATER-1'));
     await act(async () => {
-      resolveIce(response({ pokemon: [{ pokemon: { name: 'ice-1', url: 'https://pokeapi.co/api/v2/pokemon/ice-1' } }] }));
+      resolveIce(
+        response({
+          pokemon: [{ pokemon: { name: 'ice-1', url: 'https://pokeapi.co/api/v2/pokemon/ice-1' } }],
+        })
+      );
     });
     assert.equal(screen.getAllByTestId('pokemon')[0].textContent, 'WATER-1');
   });

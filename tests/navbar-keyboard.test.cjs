@@ -10,18 +10,27 @@ const { clearPokeApiCacheForTests } = require('../lib/usePokeApi.ts');
 
 const navigations = [];
 let pushResult = () => Promise.resolve(true);
-const router = { isReady: true, pathname: "/", query: {}, push: (url) => { navigations.push(url); return pushResult(); } };
-const context = React.createContext({ updateInput() {} });
+const router = {
+  isReady: true,
+  pathname: '/',
+  query: {},
+  push: url => {
+    navigations.push(url);
+    return pushResult();
+  },
+};
 function MockSelect(props) {
   const [localValue, setLocalValue] = React.useState('');
   const [menuOpen, setMenuOpen] = React.useState(false);
-  const selected = props.value === undefined ? localValue : props.value?.value ?? '';
+  const selected = props.value === undefined ? localValue : (props.value?.value ?? '');
   const choose = event => {
     const option = { value: event.target.value, label: event.target.value };
     setLocalValue(option.value);
     props.onChange(option);
   };
-  return React.createElement('div', null,
+  return React.createElement(
+    'div',
+    null,
     React.createElement('input', {
       'aria-label': props['aria-label'],
       'data-testid': props.instanceId,
@@ -30,35 +39,57 @@ function MockSelect(props) {
       onChange: choose,
       onKeyDown: props.onKeyDown,
     }),
-    React.createElement('button', {
-      type: 'button',
-      'aria-label': `${props.instanceId} ${menuOpen ? 'close' : 'open'} options`,
-      onClick: () => {
-        if (menuOpen) props.onMenuClose();
-        else props.onMenuOpen();
-        setMenuOpen(!menuOpen);
+    React.createElement(
+      'button',
+      {
+        type: 'button',
+        'aria-label': `${props.instanceId} ${menuOpen ? 'close' : 'open'} options`,
+        onClick: () => {
+          if (menuOpen) props.onMenuClose();
+          else props.onMenuOpen();
+          setMenuOpen(!menuOpen);
+        },
       },
-      }, menuOpen ? 'Close options' : 'Open options'),
-    selected && React.createElement('button', {
-      type: 'button',
-      'aria-label': `Limpar ${props.instanceId}`,
-      onClick: () => { setLocalValue(''); props.onChange(null); },
-    }, 'Limpar seleção'));
+      menuOpen ? 'Close options' : 'Open options'
+    ),
+    selected &&
+      React.createElement(
+        'button',
+        {
+          type: 'button',
+          'aria-label': `Limpar ${props.instanceId}`,
+          onClick: () => {
+            setLocalValue('');
+            props.onChange(null);
+          },
+        },
+        'Limpar seleção'
+      )
+  );
 }
 function load(relative) {
   const filename = path.resolve(__dirname, '..', relative);
   const compiled = ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      jsx: ts.JsxEmit.ReactJSX,
+      esModuleInterop: true,
+    },
   }).outputText;
   const loaded = new Module(filename, module);
   loaded.filename = filename;
   loaded.paths = Module._nodeModulePaths(path.dirname(filename));
   const originalRequire = loaded.require.bind(loaded);
-  loaded.require = (name) => {
+  loaded.require = name => {
     if (name === 'next/router') return { useRouter: () => router };
     if (name === 'next/link') return { __esModule: true, default: ({ children }) => children };
-    if (name === 'react-select') return { __esModule: true, default: MockSelect, components: {}, createFilter: () => () => true };
-    if (name === '../context/InputPokemon') return { InputContext: context };
+    if (name === 'react-select')
+      return {
+        __esModule: true,
+        default: MockSelect,
+        components: {},
+        createFilter: () => () => true,
+      };
     if (name === './Toggle') return { __esModule: true, default: () => null };
     if (name === './SearchField') return load('components/SearchField.tsx');
     return originalRequire(name);
@@ -87,7 +118,10 @@ for (const [index, label, first, second, expected] of [
     try {
       view = render(React.createElement(Navbar));
       const input = screen.getByTestId(index === 0 ? 'pokemon-name' : 'pokemon-type');
-      const button = () => screen.getByRole('button', { name: index === 0 ? 'Buscar: nome do Pokémon' : 'Buscar: tipo do Pokémon' });
+      const button = () =>
+        screen.getByRole('button', {
+          name: index === 0 ? 'Buscar: nome do Pokémon' : 'Buscar: tipo do Pokémon',
+        });
 
       assert.equal(press(input, 'Enter').defaultPrevented, false);
       fireEvent.click(button());
@@ -99,11 +133,23 @@ for (const [index, label, first, second, expected] of [
       }
       assert.deepEqual(navigations, []);
 
-      fireEvent.click(screen.getByRole('button', { name: `${index === 0 ? 'pokemon-name' : 'pokemon-type'} open options` }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: `${index === 0 ? 'pokemon-name' : 'pokemon-type'} open options`,
+        })
+      );
       assert.equal(press(input, 'Enter').defaultPrevented, false);
-      assert.deepEqual(navigations, [], 'Enter must allow the select to choose the highlighted option');
+      assert.deepEqual(
+        navigations,
+        [],
+        'Enter must allow the select to choose the highlighted option'
+      );
       fireEvent.change(input, { target: { value: second } });
-      fireEvent.click(screen.getByRole('button', { name: `${index === 0 ? 'pokemon-name' : 'pokemon-type'} close options` }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: `${index === 0 ? 'pokemon-name' : 'pokemon-type'} close options`,
+        })
+      );
       assert.equal(press(input, 'Enter', true).defaultPrevented, false);
       assert.deepEqual(navigations, [], 'IME composition must not submit a search');
       assert.equal(press(input, 'Enter').defaultPrevented, true);
@@ -119,23 +165,30 @@ for (const [index, label, first, second, expected] of [
   });
 }
 
-for (const [index, label] of [[0, 'name'], [1, 'type']]) {
+for (const [index, label] of [
+  [0, 'name'],
+  [1, 'type'],
+]) {
   for (const outcome of ['success', 'false', 'cancelled', 'error']) {
     test(`${label} search keeps loading while pending and recovers after ${outcome}`, async () => {
       const originalFetch = global.fetch;
       global.fetch = async () => ({ ok: true, json: async () => ({ results: [] }) });
       let resolveNavigation;
       let rejectNavigation;
-      pushResult = () => new Promise((resolve, reject) => {
-        resolveNavigation = resolve;
-        rejectNavigation = reject;
-      });
+      pushResult = () =>
+        new Promise((resolve, reject) => {
+          resolveNavigation = resolve;
+          rejectNavigation = reject;
+        });
       navigations.length = 0;
       let view;
       try {
         view = render(React.createElement(Navbar));
         const inputs = [screen.getByTestId('pokemon-name'), screen.getByTestId('pokemon-type')];
-        const buttons = [screen.getByRole('button', { name: 'Buscar: nome do Pokémon' }), screen.getByRole('button', { name: 'Buscar: tipo do Pokémon' })];
+        const buttons = [
+          screen.getByRole('button', { name: 'Buscar: nome do Pokémon' }),
+          screen.getByRole('button', { name: 'Buscar: tipo do Pokémon' }),
+        ];
         fireEvent.change(inputs[0], { target: { value: 'pikachu' } });
         fireEvent.change(inputs[1], { target: { value: 'fire' } });
         fireEvent.click(buttons[index]);
@@ -146,14 +199,21 @@ for (const [index, label] of [[0, 'name'], [1, 'type']]) {
         fireEvent.click(buttons[index]);
         fireEvent.click(buttons[1 - index]);
         press(inputs[index], 'Enter');
-        assert.equal(navigations.length, 1, 'pending navigation must block duplicate and competing searches');
+        assert.equal(
+          navigations.length,
+          1,
+          'pending navigation must block duplicate and competing searches'
+        );
         // An event-loop turn must not clear loading while router.push is unresolved.
-        await act(async () => { await new Promise(setImmediate); });
+        await act(async () => {
+          await new Promise(setImmediate);
+        });
         assert.equal(buttons[index].getAttribute('aria-busy'), 'true');
         await act(async () => {
           if (outcome === 'success') resolveNavigation(true);
           if (outcome === 'false') resolveNavigation(false);
-          if (outcome === 'cancelled') rejectNavigation(Object.assign(new Error('Cancelled'), { cancelled: true }));
+          if (outcome === 'cancelled')
+            rejectNavigation(Object.assign(new Error('Cancelled'), { cancelled: true }));
           if (outcome === 'error') rejectNavigation(new Error('Navigation failed'));
           await new Promise(setImmediate);
         });
@@ -246,7 +306,9 @@ test('name options load on focus without a duplicate request from the idle prefe
     fireEvent.focus(screen.getByTestId('pokemon-name'));
     await waitFor(() => assert.equal(requestedUrls.length, 1));
     assert.equal(requestedUrls[0], 'https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0');
-    await act(async () => { await new Promise(resolve => global.setTimeout(resolve, 350)); });
+    await act(async () => {
+      await new Promise(resolve => global.setTimeout(resolve, 350));
+    });
     assert.equal(requestedUrls.length, 1);
   } finally {
     if (view) view.unmount();

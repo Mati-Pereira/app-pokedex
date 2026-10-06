@@ -1,74 +1,20 @@
 [
-  {
-    "label": "Normal",
-    "value": "normal"
-  },
-  {
-    "label": "Lutador",
-    "value": "fighting"
-  },
-  {
-    "label": "Voador",
-    "value": "flying"
-  },
-  {
-    "label": "Veneno",
-    "value": "poison"
-  },
-  {
-    "label": "Terrestre",
-    "value": "ground"
-  },
-  {
-    "label": "Pedra",
-    "value": "rock"
-  },
-  {
-    "label": "Inseto",
-    "value": "bug"
-  },
-  {
-    "label": "Fantasma",
-    "value": "ghost"
-  },
-  {
-    "label": "Aço",
-    "value": "steel"
-  },
-  {
-    "label": "Fogo",
-    "value": "fire"
-  },
-  {
-    "label": "Água",
-    "value": "water"
-  },
-  {
-    "label": "Grama",
-    "value": "grass"
-  },
-  {
-    "label": "Elétrico",
-    "value": "electric"
-  },
-  {
-    "label": "Psíquico",
-    "value": "psychic"
-  },
-  {
-    "label": "Gelo",
-    "value": "ice"
-  },
-  {
-    "label": "Dragão",
-    "value": "dragon"
-  },
-  {
-    "label": "Sombrio",
-    "value": "dark"
-  },
-  {
-    "label": "Fada",
-    "value": "fairy"
-  }
+  { "value": "normal" },
+  { "value": "fighting" },
+  { "value": "flying" },
+  { "value": "poison" },
+  { "value": "ground" },
+  { "value": "rock" },
+  { "value": "bug" },
+  { "value": "ghost" },
+  { "value": "steel" },
+  { "value": "fire" },
+  { "value": "water" },
+  { "value": "grass" },
+  { "value": "electric" },
+  { "value": "psychic" },
+  { "value": "ice" },
+  { "value": "dragon" },
+  { "value": "dark" },
+  { "value": "fairy" }
 ]

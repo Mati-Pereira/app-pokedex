@@ -11,10 +11,9 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { useLanguage } from '../context/LanguageContext';
 import { localizedType, t } from '../lib/i18n';
+import { getPageCount, getPageOffset, pokemonsPerPage } from '../lib/pagination';
 
 const Pagination = dynamic(() => import('react-responsive-pagination'), { ssr: false });
-
-const pokemonsPerPage = 9;
 
 const Types = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,7 +38,7 @@ const Types = () => {
         `https://pokeapi.co/api/v2/type/${encodeURIComponent(type)}`,
         signal
       );
-      const offset = (requestPage - 1) * pokemonsPerPage;
+      const offset = getPageOffset(requestPage);
       const pageMembers = members.slice(offset, offset + pokemonsPerPage);
       return {
         count: members.length,
@@ -51,7 +50,7 @@ const Types = () => {
   const isLoading = !router.isReady || isFetching;
   const pagePokemons = data?.pokemons ?? [];
   const totalPokemons = data?.count ?? 0;
-  const pageCount = Math.ceil(totalPokemons / pokemonsPerPage);
+  const pageCount = getPageCount(totalPokemons);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -61,7 +60,11 @@ const Types = () => {
   const handlePageChange = (page: number) => setCurrentPage(page);
   if (isLoading) {
     return (
-      <div role="status" aria-live="polite" className="flex min-h-[50vh] w-full flex-col items-center justify-center gap-4 bg-paper text-paper-ink dark:bg-slate-800 dark:text-white">
+      <div
+        role="status"
+        aria-live="polite"
+        className="bg-paper text-paper-ink flex min-h-[50vh] w-full flex-col items-center justify-center gap-4 dark:bg-slate-800 dark:text-white"
+      >
         <Waveform size={60} color="#3d3e7c" />
         <p>{t(language, 'loadingPokemons')}</p>
       </div>
@@ -69,9 +72,13 @@ const Types = () => {
   }
   if (error) {
     return (
-      <main className="min-h-[50vh] bg-paper px-6 py-8 text-paper-ink dark:bg-slate-800 dark:text-slate-50">
+      <main className="bg-paper text-paper-ink min-h-[50vh] px-6 py-8 dark:bg-slate-800 dark:text-slate-50">
         <p role="alert">{error}</p>
-        <button type="button" className="btn mt-4 bg-pokedex text-white hover:bg-pokedex-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pokedex dark:bg-blue-800 dark:hover:bg-blue-900 dark:focus-visible:outline-blue-700" onClick={retry}>
+        <button
+          type="button"
+          className="btn bg-pokedex hover:bg-pokedex-hover focus-visible:outline-pokedex mt-4 text-white focus-visible:outline-2 focus-visible:outline-offset-2 dark:bg-blue-800 dark:hover:bg-blue-900 dark:focus-visible:outline-blue-700"
+          onClick={retry}
+        >
           {t(language, 'retry')}
         </button>
       </main>
@@ -79,11 +86,14 @@ const Types = () => {
   }
   if (!isLoading && !error && (!type || (data && totalPokemons === 0))) {
     return (
-      <main className="flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center gap-5 bg-paper px-5 py-10 text-center text-paper-ink dark:bg-slate-800 dark:text-white">
+      <main className="bg-paper text-paper-ink flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center gap-5 px-5 py-10 text-center dark:bg-slate-800 dark:text-white">
         <img src="sadPokemon1.png" alt="" aria-hidden="true" className="w-48 sm:w-60" />
         <h1 className="text-2xl font-bold sm:text-3xl">{t(language, 'emptyTitle')}</h1>
         <p>{t(language, 'emptyType')}</p>
-        <Link href="/" className="btn min-h-11 bg-pokedex text-white hover:bg-pokedex-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pokedex dark:bg-blue-800 dark:hover:bg-blue-900 dark:focus-visible:outline-blue-700">
+        <Link
+          href="/"
+          className="btn bg-pokedex hover:bg-pokedex-hover focus-visible:outline-pokedex min-h-11 text-white focus-visible:outline-2 focus-visible:outline-offset-2 dark:bg-blue-800 dark:hover:bg-blue-900 dark:focus-visible:outline-blue-700"
+        >
           {t(language, 'allPokemons')}
         </Link>
       </main>
@@ -91,14 +101,25 @@ const Types = () => {
   }
 
   return (
-    <main className="min-h-[calc(100vh-5rem)] bg-paper px-2 py-4 text-paper-ink shadow-xl ring-1 ring-slate-900/5 dark:bg-slate-800 dark:text-slate-50 sm:px-4 sm:py-6">
-      <h1 className="px-2 text-xl font-extrabold text-slate-900 dark:text-white">{t(language, 'typeHeading', { type: localizedType(language, type) })}</h1>
-      <p className="px-2 pt-1 text-sm text-paper-muted dark:text-slate-300" aria-live="polite">
-        {t(language, 'showing', { start: (currentPage - 1) * pokemonsPerPage + 1, end: Math.min(currentPage * pokemonsPerPage, totalPokemons), total: totalPokemons })}
+    <main className="bg-paper text-paper-ink min-h-[calc(100vh-5rem)] px-2 py-4 shadow-xl ring-1 ring-slate-900/5 sm:px-4 sm:py-6 dark:bg-slate-800 dark:text-slate-50">
+      <h1 className="px-2 text-xl font-extrabold text-slate-900 dark:text-white">
+        {t(language, 'typeHeading', { type: localizedType(language, type) })}
+      </h1>
+      <p className="text-paper-muted px-2 pt-1 text-sm dark:text-slate-300" aria-live="polite">
+        {t(language, 'showing', {
+          start: (currentPage - 1) * pokemonsPerPage + 1,
+          end: Math.min(currentPage * pokemonsPerPage, totalPokemons),
+          total: totalPokemons,
+        })}
       </p>
       <Grid>
         {pagePokemons?.map((pokemon: PokemonDetails, index: number) => (
-          <Link href={`/${pokemon.name}`} key={pokemon.id} aria-label={t(language, 'viewDetails', { name: pokemon.name })} className="rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-pokedex dark:focus-visible:outline-blue-700">
+          <Link
+            href={`/${pokemon.name}`}
+            key={pokemon.id}
+            aria-label={t(language, 'viewDetails', { name: pokemon.name })}
+            className="focus-visible:outline-pokedex rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 dark:focus-visible:outline-blue-700"
+          >
             <Pokemon
               image={pokemon.sprites.front_default ?? ''}
               text={pokemon.name.toUpperCase()}
@@ -117,9 +138,15 @@ const Types = () => {
           nextLabel="›"
           ariaPreviousLabel={t(language, 'previousPage')}
           ariaNextLabel={t(language, 'nextPage')}
-          ariaPageLabel={(page, active) => active ? t(language, 'currentPage', { page }) : t(language, 'goToPage', { page })}
+          ariaPageLabel={(page, active) =>
+            active ? t(language, 'currentPage', { page }) : t(language, 'goToPage', { page })
+          }
         />
-        {pageCount > 0 && <p className="mt-2 text-center text-sm text-paper-muted dark:text-slate-300">{t(language, 'pageOf', { current: currentPage, total: pageCount })}</p>}
+        {pageCount > 0 && (
+          <p className="text-paper-muted mt-2 text-center text-sm dark:text-slate-300">
+            {t(language, 'pageOf', { current: currentPage, total: pageCount })}
+          </p>
+        )}
       </nav>
     </main>
   );

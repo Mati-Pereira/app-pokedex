@@ -16,7 +16,9 @@ function mount(key, load) {
     initialProps: { k: key },
   });
   return {
-    get state() { return view.result; },
+    get state() {
+      return view.result;
+    },
     render: async k => view.rerender({ k }),
     unmount: view.unmount,
   };
@@ -134,7 +136,10 @@ test('fetch helpers reject HTTP errors and invalid bodies', async () => {
     globalThis.fetch = async () => ok({ results: [{ name: 1 }] });
     await assert.rejects(fetchPokemonNames(namesUrl, signal), /Invalid Pokemon names/);
     globalThis.fetch = async () => ok({ name: 'x' });
-    await assert.rejects(fetchPokemonDetails([{ url: detailsUrl }], signal), /Invalid Pokemon response/);
+    await assert.rejects(
+      fetchPokemonDetails([{ url: detailsUrl }], signal),
+      /Invalid Pokemon response/
+    );
     globalThis.fetch = async () => ok({ name: 'x', sprites: {}, types: [] });
     assert.equal((await fetchPokemonDetails([{ url: detailsUrl }], signal))[0].name, 'x');
   } finally {

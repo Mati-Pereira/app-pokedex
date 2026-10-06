@@ -8,15 +8,21 @@ const React = require('react');
 const { act, fireEvent, render, screen, waitFor } = require('./setup-dom.cjs');
 const { clearPokeApiCacheForTests } = require('../lib/usePokeApi.ts');
 let latestPageChange;
-function MockPokemon({ text }) { return React.createElement('article', { 'data-testid': 'pokemon' }, text); }
+function MockPokemon({ text }) {
+  return React.createElement('article', { 'data-testid': 'pokemon' }, text);
+}
 function MockPagination({ current, total, onPageChange }) {
   latestPageChange = onPageChange;
-  return React.createElement('button', {
-    'data-testid': 'pagination',
-    'data-current': current,
-    'data-total': total,
-    onClick: () => onPageChange(current < total ? current + 1 : 1),
-  }, `Page ${current} of ${total}`);
+  return React.createElement(
+    'button',
+    {
+      'data-testid': 'pagination',
+      'data-current': current,
+      'data-total': total,
+      onClick: () => onPageChange(current < total ? current + 1 : 1),
+    },
+    `Page ${current} of ${total}`
+  );
 }
 function MockSelect({ instanceId, options, isLoading, onChange, onFocus }) {
   return React.createElement('input', {
@@ -28,9 +34,15 @@ function MockSelect({ instanceId, options, isLoading, onChange, onFocus }) {
     onChange: event => onChange({ value: event.target.value, label: event.target.value }),
   });
 }
-function MockLoader() { return React.createElement('span', { 'data-testid': 'loader' }, 'Loading'); }
-const context = React.createContext({ updateInput() {} });
-const router = { isReady: true, pathname: '/types', query: { type: 'fire' }, push: async () => true };
+function MockLoader() {
+  return React.createElement('span', { 'data-testid': 'loader' }, 'Loading');
+}
+const router = {
+  isReady: true,
+  pathname: '/types',
+  query: { type: 'fire' },
+  push: async () => true,
+};
 function loadModule(relative) {
   const filename = path.resolve(__dirname, '..', relative);
   const loaded = new Module(filename, module);
@@ -40,30 +52,58 @@ function loadModule(relative) {
   loaded.require = name => {
     if (name === 'next/router') return { useRouter: () => router };
     if (name === 'next/link') return { __esModule: true, default: ({ children }) => children };
-    if (name === '../components/Grid') return { __esModule: true, default: ({ children }) => children };
+    if (name === '../components/Grid')
+      return { __esModule: true, default: ({ children }) => children };
     if (name === '../components/Pokemon') return { __esModule: true, default: MockPokemon };
     if (name === 'next/dynamic') return { __esModule: true, default: () => MockPagination };
-    if (name === 'react-responsive-pagination') return { __esModule: true, default: MockPagination };
-    if (name === 'react-select') return { __esModule: true, default: MockSelect, components: {}, createFilter: () => () => true };
-    if (name === '../context/InputPokemon') return { InputContext: context };
-    if (name === './SearchField') return { __esModule: true, default: loadModule('components/SearchField.tsx') };
+    if (name === 'react-responsive-pagination')
+      return { __esModule: true, default: MockPagination };
+    if (name === 'react-select')
+      return {
+        __esModule: true,
+        default: MockSelect,
+        components: {},
+        createFilter: () => () => true,
+      };
+    if (name === './SearchField')
+      return { __esModule: true, default: loadModule('components/SearchField.tsx') };
     if (name === './Toggle') return { __esModule: true, default: () => null };
     if (name === '@uiball/loaders') return { Waveform: MockLoader, Ring: MockLoader };
     return originalRequire(name);
   };
-  loaded._compile(ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
-  }).outputText, filename);
+  loaded._compile(
+    ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        jsx: ts.JsxEmit.ReactJSX,
+        esModuleInterop: true,
+      },
+    }).outputText,
+    filename
+  );
   return loaded.exports.default;
 }
 const load = loadModule;
-const components = { list: load('pages/index.tsx'), type: load('pages/types.tsx'), names: load('components/Navbar.tsx') };
+const components = {
+  list: load('pages/index.tsx'),
+  type: load('pages/types.tsx'),
+  names: load('components/Navbar.tsx'),
+};
 const response = data => ({ ok: true, status: 200, json: async () => data });
 const detail = { id: 1, name: 'charmander', types: [], sprites: { front_default: 'sprite.png' } };
 function goodApi(kind, url) {
   if (kind === 'names') return response({ results: [{ name: 'charmander' }] });
-  if (url.includes('/type/')) return response({ pokemon: [{ pokemon: { name: 'charmander', url: 'https://pokeapi.co/api/v2/pokemon/charmander' } }] });
-  if (url.includes('?offset=')) return response({ count: 27, results: [{ name: 'charmander', url: 'https://pokeapi.co/api/v2/pokemon/charmander' }] });
+  if (url.includes('/type/'))
+    return response({
+      pokemon: [
+        { pokemon: { name: 'charmander', url: 'https://pokeapi.co/api/v2/pokemon/charmander' } },
+      ],
+    });
+  if (url.includes('?offset='))
+    return response({
+      count: 27,
+      results: [{ name: 'charmander', url: 'https://pokeapi.co/api/v2/pokemon/charmander' }],
+    });
   return response(detail);
 }
 const initialCatalog = {
@@ -76,8 +116,15 @@ const initialCatalog = {
 };
 const failures = {
   http: async () => ({ ok: false, status: 503 }),
-  network: async () => { throw new Error('Offline'); },
-  json: async () => ({ ok: true, json: async () => { throw new SyntaxError('Invalid JSON'); } }),
+  network: async () => {
+    throw new Error('Offline');
+  },
+  json: async () => ({
+    ok: true,
+    json: async () => {
+      throw new SyntaxError('Invalid JSON');
+    },
+  }),
   malformed: async () => response({}),
 };
 for (const kind of ['list', 'type', 'names']) {
@@ -87,14 +134,20 @@ for (const kind of ['list', 'type', 'names']) {
       let failing = true;
       let view;
       clearPokeApiCacheForTests();
-      global.fetch = url => failing ? badApi() : Promise.resolve(goodApi(kind, url));
+      global.fetch = url => (failing ? badApi() : Promise.resolve(goodApi(kind, url)));
       try {
-        view = render(React.createElement(components[kind], kind === 'list' ? { initialData: initialCatalog } : {}));
+        view = render(
+          React.createElement(
+            components[kind],
+            kind === 'list' ? { initialData: initialCatalog } : {}
+          )
+        );
         if (kind === 'list') fireEvent.click(screen.getByTestId('pagination'));
         if (kind === 'names') fireEvent.focus(screen.getByTestId('select-pokemon-name'));
         await waitFor(() => assert.ok(screen.getByRole('alert')));
         assert.equal(screen.queryByTestId('loader'), null);
-        if (kind === 'names') assert.equal(screen.getByTestId('select-pokemon-name').dataset.loading, 'false');
+        if (kind === 'names')
+          assert.equal(screen.getByTestId('select-pokemon-name').dataset.loading, 'false');
         failing = false;
         fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
         await waitFor(() => assert.equal(screen.queryByRole('alert'), null));
@@ -102,7 +155,9 @@ for (const kind of ['list', 'type', 'names']) {
           assert.equal(screen.getByTestId('select-pokemon-name').dataset.optionCount, '1');
           assert.equal(screen.getByTestId('select-pokemon-name').dataset.loading, 'false');
         } else {
-          await waitFor(() => assert.equal(screen.getByTestId('pokemon').textContent, 'CHARMANDER'));
+          await waitFor(() =>
+            assert.equal(screen.getByTestId('pokemon').textContent, 'CHARMANDER')
+          );
         }
       } finally {
         if (view) view.unmount();
@@ -113,15 +168,24 @@ for (const kind of ['list', 'type', 'names']) {
 }
 for (const kind of ['list', 'type']) {
   test(`${kind} handles a failed individual Pokemon request and an invalid detail response`, async () => {
-    for (const badDetail of [() => ({ ok: false, status: 500 }), () => response({ name: 'charmander' })]) {
+    for (const badDetail of [
+      () => ({ ok: false, status: 500 }),
+      () => response({ name: 'charmander' }),
+    ]) {
       const originalFetch = global.fetch;
       let view;
       clearPokeApiCacheForTests();
-      global.fetch = async url => url.startsWith('https://pokeapi.co/api/v2/pokemon/') && !url.includes('?')
-        ? badDetail()
-        : goodApi(kind, url);
+      global.fetch = async url =>
+        url.startsWith('https://pokeapi.co/api/v2/pokemon/') && !url.includes('?')
+          ? badDetail()
+          : goodApi(kind, url);
       try {
-        view = render(React.createElement(components[kind], kind === 'list' ? { initialData: initialCatalog } : {}));
+        view = render(
+          React.createElement(
+            components[kind],
+            kind === 'list' ? { initialData: initialCatalog } : {}
+          )
+        );
         if (kind === 'list') fireEvent.click(screen.getByTestId('pagination'));
         await waitFor(() => assert.ok(screen.getByRole('alert')));
         assert.equal(screen.queryByTestId('loader'), null);
@@ -142,17 +206,26 @@ for (const kind of ['list', 'type', 'names']) {
     clearPokeApiCacheForTests();
     global.fetch = (url, options) => {
       signal = options.signal;
-      return new Promise((resolve, rejectPromise) => { reject = rejectPromise; });
+      return new Promise((resolve, rejectPromise) => {
+        reject = rejectPromise;
+      });
     };
     try {
-      view = render(React.createElement(components[kind], kind === 'list' ? { initialData: initialCatalog } : {}));
+      view = render(
+        React.createElement(
+          components[kind],
+          kind === 'list' ? { initialData: initialCatalog } : {}
+        )
+      );
       if (kind === 'list') fireEvent.click(screen.getByTestId('pagination'));
       if (kind === 'names') fireEvent.focus(screen.getByTestId('select-pokemon-name'));
       await waitFor(() => assert.ok(signal));
       assert.equal(signal.aborted, false);
       view.unmount();
       await waitFor(() => assert.equal(signal.aborted, true));
-      await act(async () => { reject(new Error('Cancelled')); });
+      await act(async () => {
+        reject(new Error('Cancelled'));
+      });
     } finally {
       global.fetch = originalFetch;
     }
@@ -165,18 +238,27 @@ test('list ignores an old page response even when the API mock does not honor ca
   let view;
   clearPokeApiCacheForTests();
   global.fetch = async url => {
-    if (url.includes('offset=9&')) return new Promise(resolve => { resolveOld = resolve; });
+    if (url.includes('offset=9&'))
+      return new Promise(resolve => {
+        resolveOld = resolve;
+      });
     return goodApi('list', url);
   };
   try {
     view = render(React.createElement(components.list, { initialData: initialCatalog }));
     await waitFor(() => assert.equal(screen.getByTestId('pagination').dataset.current, '1'));
     const changePage = latestPageChange;
-    await act(async () => { changePage(2); });
+    await act(async () => {
+      changePage(2);
+    });
     await waitFor(() => assert.equal(typeof resolveOld, 'function'));
-    await act(async () => { changePage(3); });
+    await act(async () => {
+      changePage(3);
+    });
     await waitFor(() => assert.equal(screen.getByTestId('pagination').dataset.current, '3'));
-    await act(async () => { resolveOld(response({ count: 27, results: [] })); });
+    await act(async () => {
+      resolveOld(response({ count: 27, results: [] }));
+    });
     assert.equal(screen.getByTestId('pagination').dataset.current, '3');
     assert.equal(screen.getByTestId('pokemon').textContent, 'CHARMANDER');
   } finally {

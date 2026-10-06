@@ -1,4 +1,3 @@
-
 # App Pokedex
 
 An app to look at the attributes of your favorite pokemon, such as its color in shiny mode
@@ -94,7 +93,9 @@ The production server runs at http://localhost:3000. The build currently fetches
 
 Production verification results and remaining limitations are recorded in [docs/PRODUCTION_BASELINE.md](docs/PRODUCTION_BASELINE.md).
 
-The TypeScript modernization step uses TypeScript 5.9.3 and `@types/node` 24.19.1. A clean npm installation, 48 regression tests, type checks, lint, and production build were validated. React remains at 18.2.0. The next migration step upgraded Next.js and eslint-config-next to 14.2.35 and ESLint to 8.57.1; clean installation, dependency tree, types, lint, tests, build, and focused production browser checks passed.
+## Current dependency baseline
+
+The installed baseline (see `package.json` and `package-lock.json`) is Next.js 16.3.8, React and React DOM 19.3.0, TypeScript 5.9.3, `@types/node` 24.19.1, Tailwind CSS 4.3.3 and daisyUI 5.7.47. The app keeps the Pages Router. A clean `npm ci` installation is required; the automated suite currently passes 93 regression tests, together with `npm run typecheck`, `npm run lint` and `npm run format:check`. `npm run build` generates all 1,355 static pages. Build and browser verification details are recorded in [docs/PRODUCTION_BASELINE.md](docs/PRODUCTION_BASELINE.md).
 
 ## Tech Stack
 
@@ -102,4 +103,4 @@ The TypeScript modernization step uses TypeScript 5.9.3 and `@types/node` 24.19.
 
 **Server:** Node
 
-The Next.js 15 step uses Next.js and eslint-config-next 15.5.27, preserving React 18.2 and Pages Router. Installation, dependencies, types, lint, 48 tests, production build and focused browser checks passed. Static generation is limited to two simultaneous pages after external API connection timeouts; see the production baseline for details and experimental configuration limitations.
+Static generation still fetches the Pokemon catalog and pre-renders every detail page, so it requires network access and can take several minutes. Static generation concurrency is bounded in `next.config.js` after PokeAPI connection timeouts; see the production baseline for the current status and experimental configuration limitations.

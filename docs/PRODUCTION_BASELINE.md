@@ -74,3 +74,13 @@ References: [Next.js 15 and React 18 Pages Router support](https://nextjs.org/bl
 - At a 390 x 844 viewport, both the filtered list and Bulbasaur details measured 375 px available/content width, without horizontal page overflow. The temporary viewport override was reset afterward.
 - No warning/error entries were observed in the production browser console before the intentional 404 check. API failure and cancellation remain covered by mocked regression tests, rather than production fault injection.
 - No application components or styles were changed. No deployment, push or hosted runtime verification was performed.
+
+## Current baseline: Next.js 16, React 19 and Tailwind 4
+
+Recorded on October 5, 2026. This entry describes the installed dependency baseline and the automated checks run on this machine; it is not a new browser validation.
+
+- Installed from `package.json` / `package-lock.json`: Next.js 16.3.8, React and React DOM 19.3.0, TypeScript 5.9.3, `@types/node` 24.19.1, Tailwind CSS 4.3.3 and daisyUI 5.7.47. The Pages Router is retained.
+- Automated checks passing: `npm test` (93 regression tests), `npm run typecheck`, `npm run lint` and `npm run format:check`.
+- `npm run format:check` failed on Windows because the checkout used CRLF while Prettier requires LF. `.gitattributes` now normalizes tracked text files to LF and the repository was reformatted with Prettier.
+- `npm run build` passed with Next.js 16.3.8 (Turbopack): TypeScript finished, the production bundle compiled, and all 1,355 static pages were generated using 2 workers with `staticGenerationMaxConcurrency: 1`. Detail generation took about 10 seconds because the PokeAPI disk cache was already populated.
+- Production HTTP smoke test against `npm start` on http://localhost:3000: `/` returned 200 (34,557 bytes), `/bulbasaur` returned 200 (26,513 bytes), `/types?type=fire` returned 200 (16,756 bytes) and an unknown Pokemon path returned 404. This is an HTTP smoke test, not the full browser flow list from the earlier sections.
