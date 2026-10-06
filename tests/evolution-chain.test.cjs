@@ -282,7 +282,9 @@ test('defers requests until the section approaches the viewport and renders the 
     act(() => observerCallback([{ isIntersecting: true }]));
     await waitFor(() => assert.ok(screen.getByRole('link', { name: 'Ver detalhes de ivysaur' })));
     assert.equal(requests.length, 2);
-    assert.ok(screen.getByTestId('evolution-arrow').classList.contains('h-9'));
+    assert.ok(
+      screen.getByTestId('evolution-arrow').querySelector('svg.hidden')?.classList.contains('h-9')
+    );
     assert.equal(
       screen.getByRole('link', { name: 'Ver detalhes de bulbasaur' }).getAttribute('aria-current'),
       'page'
@@ -373,7 +375,7 @@ test('aborts the in-flight API request when the evolution section unmounts', asy
   }
 });
 
-test('centers Eevee and arranges all eight evolutions around it with large arrows', () => {
+test('groups Eevee evolutions into responsive branches with clear arrows', () => {
   const { EvolutionTreeView } = loadEvolutionComponent();
   const node = {
     species: resource('eevee', 133),
@@ -395,16 +397,67 @@ test('centers Eevee and arranges all eight evolutions around it with large arrow
   };
   const view = render(React.createElement(EvolutionTreeView, { node, currentName: 'eevee' }));
   try {
-    const radial = screen.getByTestId('evolution-radial');
-    assert.equal(radial.querySelectorAll('[data-testid="evolution-radial-arrow"]').length, 8);
-    assert.equal(radial.textContent.includes('Nível 20'), false);
-    assert.equal(radial.querySelectorAll('[data-selected="true"]').length, 1);
+    const tree = screen.getByTestId('evolution-tree');
+    const branch = screen.getByTestId('evolution-branch');
+    assert.equal(branch.querySelectorAll('[data-testid="evolution-arrow"]').length, 8);
+    assert.ok(branch.querySelector('ul')?.classList.contains('grid-cols-1'));
+    assert.ok(branch.querySelector('ul')?.classList.contains('sm:grid-cols-2'));
+    assert.equal(tree.textContent.includes('Nível 20'), false);
+    assert.equal(tree.querySelectorAll('[data-selected="true"]').length, 1);
     assert.equal(screen.getAllByRole('link').length, 9);
     assert.equal(
       screen.getByRole('link', { name: 'Ver detalhes de eevee' }).getAttribute('aria-current'),
       'page'
     );
-    assert.equal(radial.querySelector('.border-l-2'), null);
+    assert.equal(tree.querySelector('[class*="min-w-[48rem]"]'), null);
+    const optionGroups = screen.getByTestId('evolution-option-groups');
+    assert.equal(optionGroups.querySelectorAll('section').length, 1);
+    assert.ok(optionGroups.querySelector('section')?.classList.contains('lg:col-span-2'));
+    assert.ok(
+      optionGroups
+        .querySelector('ul')
+        ?.className.includes('grid-cols-[repeat(auto-fit,minmax(min(100%,18rem),1fr))]')
+    );
+  } finally {
+    view.unmount();
+  }
+});
+
+test('keeps a three-Pokemon linear evolution aligned as one compact chain', () => {
+  const { EvolutionTreeView } = loadEvolutionComponent();
+  const node = {
+    species: resource('gastly', 92),
+    evolution_details: [],
+    evolves_to: [
+      {
+        species: resource('haunter', 93),
+        evolution_details: [details({ min_level: 25 })],
+        evolves_to: [
+          {
+            species: resource('gengar', 94),
+            evolution_details: [details({ trigger: resource('trade', 2, 'evolution-trigger') })],
+            evolves_to: [],
+          },
+        ],
+      },
+    ],
+  };
+  const view = render(React.createElement(EvolutionTreeView, { node, currentName: 'haunter' }));
+  try {
+    const tree = screen.getByTestId('evolution-tree');
+    const chain = tree.querySelector('[data-testid="evolution-chain"][data-compact="false"]');
+    assert.ok(chain?.classList.contains('w-fit'));
+    assert.ok(chain?.classList.contains('sm:flex-row'));
+    assert.equal(chain?.querySelectorAll('[data-testid="evolution-arrow"]').length, 2);
+    assert.equal(chain?.querySelectorAll('a').length, 3);
+    assert.equal(
+      chain?.querySelectorAll('[data-testid="evolution-chain"][data-compact="false"]').length,
+      1
+    );
+    assert.equal(screen.getAllByRole('link').length, 3);
+    const optionGroups = screen.getByTestId('evolution-option-groups');
+    assert.equal(optionGroups.querySelectorAll('section').length, 2);
+    assert.ok(optionGroups.classList.contains('lg:grid-cols-2'));
   } finally {
     view.unmount();
   }
@@ -444,12 +497,12 @@ test('moves evolution conditions off the arrows and groups required and alternat
   };
   const view = render(React.createElement(EvolutionTreeView, { node, currentName: 'eevee' }));
   try {
-    const map = screen.getByTestId('evolution-radial');
+    const map = screen.getByTestId('evolution-tree');
     const optionsPanel = screen.getByRole('complementary');
-    const explorerLayout = map.parentElement?.parentElement;
+    const explorerLayout = map.parentElement;
     assert.ok(explorerLayout?.className.includes('flex-col'));
     assert.ok(map.compareDocumentPosition(optionsPanel) & 4);
-    assert.equal(map.querySelectorAll('[data-testid="evolution-radial-arrow"] li').length, 0);
+    assert.equal(map.querySelectorAll('[data-testid="evolution-arrow"] li').length, 0);
     assert.ok(screen.getByRole('button', { name: /SYLVEON Selected 2 possible methods/ }));
 
     fireEvent.click(screen.getByRole('button', { name: 'View conditions for sylveon' }));
@@ -465,7 +518,9 @@ test('moves evolution conditions off the arrows and groups required and alternat
       'true'
     );
     assert.equal(
-      map.querySelector('[data-target="sylveon"]').getAttribute('data-selected'),
+      map
+        .querySelector('[data-testid="evolution-arrow"][data-target="sylveon"]')
+        .getAttribute('data-selected'),
       'true'
     );
     assert.ok(screen.getByRole('link', { name: 'View sylveon details' }));

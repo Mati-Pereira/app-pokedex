@@ -18,45 +18,13 @@ interface EvolutionTreeProps {
   selectedName: string | null;
   onSelect: (name: string) => void;
   isRoot?: boolean;
+  compact?: boolean;
 }
 
 interface EvolutionTransition {
   from: string;
   to: EvolutionNode;
 }
-
-const radialSlots: Record<number, number[]> = {
-  2: [3, 5],
-  3: [1, 6, 8],
-  4: [0, 2, 6, 8],
-  5: [0, 1, 2, 6, 8],
-  6: [0, 1, 2, 6, 7, 8],
-  7: [0, 1, 2, 3, 5, 6, 8],
-  8: [0, 1, 2, 3, 5, 6, 7, 8],
-};
-
-const gridSlotClasses = [
-  'col-start-1 row-start-1',
-  'col-start-2 row-start-1',
-  'col-start-3 row-start-1',
-  'col-start-1 row-start-2',
-  'col-start-2 row-start-2',
-  'col-start-3 row-start-2',
-  'col-start-1 row-start-3',
-  'col-start-2 row-start-3',
-  'col-start-3 row-start-3',
-];
-
-const radialPoints: Record<number, { x: number; y: number }> = {
-  0: { x: 167, y: 125 },
-  1: { x: 500, y: 125 },
-  2: { x: 833, y: 125 },
-  3: { x: 167, y: 375 },
-  5: { x: 833, y: 375 },
-  6: { x: 167, y: 625 },
-  7: { x: 500, y: 625 },
-  8: { x: 833, y: 625 },
-};
 
 function collectTransitions(node: EvolutionNode): EvolutionTransition[] {
   return node.evolves_to.flatMap(child => [
@@ -152,115 +120,65 @@ function EvolutionPokemonCard({
 function EvolutionArrow({
   node,
   selectedName,
+  direction = 'right',
 }: {
   node: EvolutionNode;
   selectedName: string | null;
+  direction?: 'down' | 'right';
 }) {
   const isSelected = node.species.name === selectedName;
+  const arrowClass =
+    direction === 'down'
+      ? 'text-pokedex dark:text-blue-300 ' + (isSelected ? 'opacity-100' : 'opacity-30')
+      : isSelected
+        ? 'text-pokedex dark:text-blue-300'
+        : 'text-slate-300 dark:text-slate-700';
   return (
-    <svg
+    <div
       data-testid="evolution-arrow"
       data-target={node.species.name}
       data-selected={isSelected}
-      aria-hidden="true"
-      viewBox="0 0 120 32"
-      className={
-        'h-9 w-44 shrink-0 sm:w-52 ' +
-        (isSelected ? 'text-pokedex dark:text-blue-300' : 'text-slate-300 dark:text-slate-700')
-      }
+      className={arrowClass}
     >
-      <path
-        d="M4 16H102M88 4L104 16 88 28"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function RadialEvolution({
-  node,
-  currentName,
-  selectedName,
-  onSelect,
-  isRoot = false,
-}: EvolutionTreeProps) {
-  const markerId = 'evolution-arrow-' + node.species.name;
-  const slots = radialSlots[node.evolves_to.length] ?? radialSlots[8] ?? [];
-
-  return (
-    <div
-      data-testid="evolution-radial"
-      className="relative mx-auto aspect-[4/3] w-full max-w-[64rem] min-w-[48rem]"
-    >
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 1000 750"
-        preserveAspectRatio="none"
-        className="text-pokedex pointer-events-none absolute inset-0 h-full w-full dark:text-blue-300"
-      >
-        <defs>
-          <marker id={markerId} markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
-            <path d="M0 0L12 6 0 12Z" fill="currentColor" />
-          </marker>
-        </defs>
-        {slots.slice(0, node.evolves_to.length).map(slot => {
-          const point = radialPoints[slot];
-          const child = node.evolves_to[slots.indexOf(slot)];
-          if (!point || !child) return null;
-          const endX = 500 + (point.x - 500) * 0.72;
-          const endY = 375 + (point.y - 375) * 0.72;
-          const isSelected = child.species.name === selectedName;
-          return (
+      {direction === 'right' ? (
+        <>
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 120 32"
+            className="hidden h-9 w-20 shrink-0 sm:block sm:w-24 xl:w-44 2xl:w-52"
+          >
             <path
-              key={child.species.name}
-              data-testid="evolution-radial-arrow"
-              data-target={child.species.name}
-              data-selected={isSelected}
-              d={'M500 375L' + endX + ' ' + endY}
+              d="M4 16H102M88 4L104 16 88 28"
               fill="none"
               stroke="currentColor"
-              strokeWidth={isSelected ? 9 : 7}
+              strokeWidth="5"
               strokeLinecap="round"
-              markerEnd={'url(#' + markerId + ')'}
-              className={isSelected ? 'opacity-100' : 'opacity-30'}
+              strokeLinejoin="round"
             />
-          );
-        })}
-      </svg>
-
-      <div className="relative z-10 grid h-full grid-cols-3 grid-rows-3 place-items-center">
-        {node.evolves_to.map((child, index) => {
-          const slot = slots[index];
-          const slotClass = slot === undefined ? undefined : gridSlotClasses[slot];
-          if (!slotClass) return null;
-          return (
-            <div
-              key={child.species.name}
-              className={slotClass + ' flex min-w-0 items-center justify-center'}
-            >
-              <EvolutionTree
-                node={child}
-                currentName={currentName}
-                selectedName={selectedName}
-                onSelect={onSelect}
-              />
-            </div>
-          );
-        })}
-        <div className="col-start-2 row-start-2">
-          <EvolutionPokemonCard
-            node={node}
-            currentName={currentName}
-            selectedName={selectedName}
-            onSelect={onSelect}
-            isRoot={isRoot}
+          </svg>
+          <svg aria-hidden="true" viewBox="0 0 32 120" className="h-12 w-9 shrink-0 sm:hidden">
+            <path
+              d="M16 4V102M4 88L16 104 28 88"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </>
+      ) : (
+        <svg aria-hidden="true" viewBox="0 0 32 120" className="h-12 w-9 shrink-0">
+          <path
+            d="M16 4V102M4 88L16 104 28 88"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
-        </div>
-      </div>
+        </svg>
+      )}
     </div>
   );
 }
@@ -271,10 +189,14 @@ function EvolutionTree({
   selectedName,
   onSelect,
   isRoot = false,
+  compact = false,
 }: EvolutionTreeProps) {
-  if (node.evolves_to.length > 8) {
+  if (node.evolves_to.length > 1) {
     return (
-      <div className="mx-auto flex w-max flex-col items-center gap-4">
+      <div
+        data-testid="evolution-branch"
+        className="flex w-full min-w-0 flex-col items-center gap-3"
+      >
         <EvolutionPokemonCard
           node={node}
           currentName={currentName}
@@ -282,32 +204,21 @@ function EvolutionTree({
           onSelect={onSelect}
           isRoot={isRoot}
         />
-        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <ul className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {node.evolves_to.map(child => (
-            <li key={child.species.name} className="flex flex-col items-center gap-2">
-              <EvolutionArrow node={child} selectedName={selectedName} />
+            <li key={child.species.name} className="flex min-w-0 flex-col items-center gap-2">
+              <EvolutionArrow node={child} selectedName={selectedName} direction="down" />
               <EvolutionTree
                 node={child}
                 currentName={currentName}
                 selectedName={selectedName}
                 onSelect={onSelect}
+                compact
               />
             </li>
           ))}
         </ul>
       </div>
-    );
-  }
-
-  if (node.evolves_to.length > 1) {
-    return (
-      <RadialEvolution
-        node={node}
-        currentName={currentName}
-        selectedName={selectedName}
-        onSelect={onSelect}
-        isRoot={isRoot}
-      />
     );
   }
 
@@ -325,7 +236,14 @@ function EvolutionTree({
       );
     }
     return (
-      <div className="mx-auto flex w-max items-center justify-center gap-4 sm:gap-6">
+      <div
+        data-testid="evolution-chain"
+        data-compact={compact}
+        className={
+          'mx-auto flex w-fit max-w-full min-w-0 flex-col items-center justify-center gap-2 ' +
+          (compact ? '' : 'sm:flex-row sm:gap-4')
+        }
+      >
         <EvolutionPokemonCard
           node={node}
           currentName={currentName}
@@ -339,6 +257,7 @@ function EvolutionTree({
           currentName={currentName}
           selectedName={selectedName}
           onSelect={onSelect}
+          compact={compact}
         />
       </div>
     );
@@ -382,13 +301,16 @@ function EvolutionDetailsPanel({
         {t(language, 'evolutionOptions')}
       </h3>
 
-      <div className="mt-3 space-y-4">
+      <div
+        data-testid="evolution-option-groups"
+        className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-2"
+      >
         {Array.from(grouped.entries()).map(([from, options]) => (
-          <section key={from}>
+          <section key={from} className={grouped.size === 1 ? 'min-w-0 lg:col-span-2' : 'min-w-0'}>
             <h4 className="text-paper-ink mb-2 text-sm font-semibold dark:text-slate-200">
               {t(language, 'evolutionOptionsFrom', { name: from.toUpperCase() })}
             </h4>
-            <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <ul className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,18rem),1fr))] gap-2">
               {options.map(({ to }) => {
                 const isSelected = to.species.name === selectedName;
                 return (
@@ -486,7 +408,7 @@ export function EvolutionTreeView({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="min-w-0 overflow-x-auto pb-2">
+      <div data-testid="evolution-tree" className="min-w-0 pb-2">
         <EvolutionTree
           node={node}
           currentName={currentName}
