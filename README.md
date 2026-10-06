@@ -1,39 +1,39 @@
 # App Pokedex
 
-A Pokédex web app to browse Pokémon, filter by type, and inspect details such as sprites (including shiny), abilities, base stats and evolution chains.
+Uma aplicação web de Pokédex para navegar pelos Pokémon, filtrar por tipo e ver detalhes como sprites (incluindo shiny), habilidades, atributos base e linhas de evolução.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 
 Demo: <https://app-pokedex-ashy.vercel.app/>
 
-## Features
+## Funcionalidades
 
-- Catalog of Pokémon with pagination, served with ISR (revalidated every 6 hours).
-- Search by name with a virtualized, keyboard-friendly autocomplete.
-- Filter by type, persisted in the URL (`/types?type=fire`) so it survives reloads and can be shared.
-- Detail pages with a front/back/shiny sprite carousel, types, abilities, base stats and a lazy-loaded evolution chain (responsive branches plus a conditions panel).
-- Light/dark theme toggle that follows the system preference and persists across reloads.
-- Bilingual interface: Portuguese (default) and English, persisted across reloads.
-- Accessibility: keyboard navigation, ARIA live regions, visible focus styles and reduced-motion support.
-- Security headers and a strict Content-Security-Policy; PokeAPI requests are validated and restricted to the API origin.
+- Catálogo de Pokémon com paginação, servido com ISR (revalidado a cada 6 horas).
+- Busca por nome com autocomplete virtualizado e navegável por teclado.
+- Filtro por tipo, persistido na URL (`/types?type=fire`) para sobreviver a recarregamentos e poder ser compartilhado.
+- Páginas de detalhes com carrossel de sprites (frente/costas/shiny), tipos, habilidades, atributos base e linha de evolução carregada sob demanda (ramos responsivos e painel de condições).
+- Alternância entre tema claro e escuro, que segue a preferência do sistema e persiste entre recarregamentos.
+- Interface bilíngue: português (padrão) e inglês, persistida entre recarregamentos.
+- Acessibilidade: navegação por teclado, regiões ARIA live, estilos de foco visíveis e suporte a movimento reduzido.
+- Headers de segurança e Content-Security-Policy restritiva; as requisições à PokeAPI são validadas e restritas à origem da API.
 
-## Tech stack
+## Tecnologias
 
-| Layer                 | Technology                                                                  |
-| --------------------- | --------------------------------------------------------------------------- |
-| Framework             | Next.js 16.3.8 (Pages Router)                                               |
-| UI                    | React 19.3.0, Tailwind CSS 4.3.3, daisyUI 5.7.47                            |
-| Language              | TypeScript 5.9.3 (strict)                                                   |
-| Data                  | [PokeAPI](https://pokeapi.co/)                                              |
-| Search and pagination | react-select 5.10.2, react-window 2.3.3, react-responsive-pagination 2.14.0 |
-| Testing               | Node.js test runner, jsdom, Testing Library                                 |
+| Camada            | Tecnologia                                                                  |
+| ----------------- | --------------------------------------------------------------------------- |
+| Framework         | Next.js 16.3.8 (Pages Router)                                               |
+| UI                | React 19.3.0, Tailwind CSS 4.3.3, daisyUI 5.7.47                            |
+| Linguagem         | TypeScript 5.9.3 (strict)                                                   |
+| Dados             | [PokeAPI](https://pokeapi.co/)                                              |
+| Busca e paginação | react-select 5.10.2, react-window 2.3.3, react-responsive-pagination 2.14.0 |
+| Testes            | Node.js test runner, jsdom, Testing Library                                 |
 
-## Requirements
+## Requisitos
 
-- Node.js **24.x** (declared in `package.json` and `.nvmrc`)
-- npm **10.9.4** (locked through `packageManager`)
+- Node.js **24.x** (declarado em `package.json` e `.nvmrc`)
+- npm **10.9.4** (fixado via `packageManager`)
 
-## Getting started
+## Como rodar
 
 ```bash
 git clone https://github.com/Mati-Pereira/app-pokedex
@@ -42,49 +42,49 @@ npm ci
 npm run dev
 ```
 
-The dev server runs at http://localhost:3000.
+O servidor de desenvolvimento roda em http://localhost:3000.
 
-## Available scripts
+## Scripts disponíveis
 
-| Command                                   | Description                            |
-| ----------------------------------------- | -------------------------------------- |
-| `npm run dev`                             | Start the development server           |
-| `npm run build`                           | Create a production build              |
-| `npm start`                               | Serve the production build             |
-| `npm test`                                | Run the regression tests (`node:test`) |
-| `npm run typecheck`                       | Type-check without emitting            |
-| `npm run lint`                            | Run ESLint                             |
-| `npm run format` / `npm run format:check` | Apply / verify Prettier formatting     |
+| Comando                                   | Descrição                                    |
+| ----------------------------------------- | -------------------------------------------- |
+| `npm run dev`                             | Inicia o servidor de desenvolvimento         |
+| `npm run build`                           | Gera o build de produção                     |
+| `npm start`                               | Serve o build de produção                    |
+| `npm test`                                | Executa os testes de regressão (`node:test`) |
+| `npm run typecheck`                       | Verifica os tipos sem gerar arquivos         |
+| `npm run lint`                            | Executa o ESLint                             |
+| `npm run format` / `npm run format:check` | Aplica / verifica a formatação do Prettier   |
 
-Run a single test file:
+Para rodar um único arquivo de teste:
 
 ```bash
 node --require ./tests/ts-register.cjs --test tests/pagination.test.cjs
 ```
 
-## Project structure
+## Estrutura do projeto
 
 ```
-pages/        Routes and page-level data loading (catalog, details, type filter)
-components/   Reusable UI (Navbar, SearchField, Grid, Pokemon, EvolutionChain, ...)
-context/      Shared React state (language)
-lib/          PokeAPI access, caches, validation, i18n and pagination helpers
-types/        Shared TypeScript models
-data/         Pokémon type values
-tests/        Regression tests (node:test + jsdom + Testing Library)
-docs/         Production baseline, modernization guide and dependency notes
+pages/        Rotas e carregamento de dados por página (catálogo, detalhes, filtro por tipo)
+components/   UI reutilizável (Navbar, SearchField, Grid, Pokemon, EvolutionChain, ...)
+context/      Estado React compartilhado (idioma)
+lib/          Acesso à PokeAPI, caches, validação, i18n e helpers de paginação
+types/        Modelos TypeScript compartilhados
+data/         Valores dos tipos de Pokémon
+tests/        Testes de regressão (node:test + jsdom + Testing Library)
+docs/         Baseline de produção, guia de modernização e notas de dependências
 ```
 
-## Data and network
+## Dados e rede
 
-- All Pokémon data comes from [PokeAPI](https://pokeapi.co/); there is no local database.
-- `npm run build` fetches the catalog and pre-renders every detail page (~1,355 pages), so it needs network access and can take several minutes. The catalog uses ISR and revalidates every 6 hours.
-- Client-side search and type lists also require PokeAPI access.
-- Responses are cached in memory on the client (TTL/LRU with in-flight deduplication) and on disk in `.next/cache/pokeapi` during the build. Static generation concurrency is bounded in `next.config.js` to avoid overwhelming the API.
+- Todos os dados dos Pokémon vêm da [PokeAPI](https://pokeapi.co/); não há banco de dados local.
+- `npm run build` busca o catálogo e pré-renderiza todas as páginas de detalhes (~1.355 páginas), então precisa de acesso à rede e pode demorar vários minutos. O catálogo usa ISR e revalida a cada 6 horas.
+- A busca e as listas por tipo no cliente também exigem acesso à PokeAPI.
+- As respostas são cacheadas em memória no cliente (TTL/LRU com deduplicação de requisições em andamento) e em disco em `.next/cache/pokeapi` durante o build. A concorrência da geração estática é limitada em `next.config.js` para não sobrecarregar a API.
 
-## Validation
+## Validação
 
-Run the full suite before submitting changes:
+Rode a suíte completa antes de enviar mudanças:
 
 ```bash
 npm test
@@ -94,26 +94,26 @@ npm run format:check
 npm run build
 ```
 
-Current status: 93 regression tests pass, together with typecheck, lint and format checks, and the build generates all 1,355 static pages. Results and known limitations are recorded in [docs/PRODUCTION_BASELINE.md](docs/PRODUCTION_BASELINE.md).
+Status atual: 93 testes de regressão passam, junto com typecheck, lint e checagem de formatação, e o build gera todas as 1.355 páginas estáticas. Os resultados e as limitações conhecidas estão em [docs/PRODUCTION_BASELINE.md](docs/PRODUCTION_BASELINE.md).
 
-## Deployment
+## Deploy
 
-The app is deployed on Vercel (see the demo link above) and reads the Node version from `engines.node`. Production responses include a strict Content-Security-Policy and other security headers configured in `next.config.js`; HSTS is added only on Vercel production.
+A aplicação está publicada na Vercel (veja o link da demo acima) e lê a versão do Node em `engines.node`. As respostas de produção incluem uma Content-Security-Policy restritiva e outros headers de segurança configurados em `next.config.js`; o HSTS é adicionado apenas na produção da Vercel.
 
-## Documentation
+## Documentação
 
-- [docs/PRODUCTION_BASELINE.md](docs/PRODUCTION_BASELINE.md) — validated production behavior and limitations.
-- [docs/MODERNIZATION_GUIDELINE.md](docs/MODERNIZATION_GUIDELINE.md) — incremental upgrade plan and working conventions.
-- [docs/DEPENDENCY_COMPATIBILITY.md](docs/DEPENDENCY_COMPATIBILITY.md) — dependency compatibility notes.
-- [AGENTS.md](AGENTS.md) — repository guidelines for AI coding agents.
+- [docs/PRODUCTION_BASELINE.md](docs/PRODUCTION_BASELINE.md) — comportamento validado em produção e limitações.
+- [docs/MODERNIZATION_GUIDELINE.md](docs/MODERNIZATION_GUIDELINE.md) — plano de atualização incremental e convenções de trabalho.
+- [docs/DEPENDENCY_COMPATIBILITY.md](docs/DEPENDENCY_COMPATIBILITY.md) — notas de compatibilidade de dependências.
+- [AGENTS.md](AGENTS.md) — diretrizes do repositório para agentes de código com IA.
 
-## Author
+## Autor
 
 - [@Mati-Pereira](https://www.github.com/Mati-Pereira)
-- [Portfolio](https://portifolio-new-4q6j.vercel.app/) · [LinkedIn](https://www.linkedin.com/in/matheus-rodrigues-pereira/)
+- [Portfólio](https://portifolio-new-4q6j.vercel.app/) · [LinkedIn](https://www.linkedin.com/in/matheus-rodrigues-pereira/)
 
-Feedback and questions: matheus-rodrigues37@live.com
+Feedback e dúvidas: matheus-rodrigues37@live.com
 
-## License
+## Licença
 
 [MIT](https://choosealicense.com/licenses/mit/)
