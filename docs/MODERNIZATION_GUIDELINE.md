@@ -81,7 +81,7 @@ Critério de conclusão: instalação reproduzível, verificações de tipos e l
 - [x] Definir Node 24.x LTS para desenvolvimento e produção, registrar em `engines.node` e `.nvmrc` e conferir o suporte documentado da Vercel. A versão efetiva da hospedagem ainda deve ser confirmada antes do deploy.
 - [x] Atualizar TypeScript para 5.9.3; tipos, lint, 48 testes e build de produção passaram sem alterações no código funcional.
 - [x] Alinhar `@types/node` com Node 24 usando a versão 24.19.1.
-- [ ] Ajustar os tipos de React junto às futuras etapas de atualização de React.
+- [x] Ajustar os tipos de React junto às etapas de atualização de React (React, React DOM e tipos em 19.3.0).
 
 Usar commits `chore:` para versões/configuração e `fix:` quando houver uma correção funcional separável. Não adicionar regras de lint ou refatorações amplas ao passo de TypeScript.
 
@@ -91,8 +91,8 @@ Usar commits `chore:` para versões/configuração e `fix:` quando houver uma co
 - [x] Revisar pacotes instalados mas não usados: React Query sem uso encontrado no app; remoção fica para um passo separado.
 - [x] Avançar para Next.js 14.2.35 e eslint-config-next 14.2.35; alinhar ESLint 8.57.1 aos requisitos transitivos. Instalação limpa, árvore de dependências, tipos, lint, 48 testes, build e verificações de produção passaram, mantendo React 18.2 e Pages Router.
 - [x] Avançar para Next.js 15.5.27 e eslint-config-next 15.5.27, mantendo React 18.2 e Pages Router. Instalação limpa, dependências, tipos, lint, 48 testes, build e verificações de produção passaram. Removido swcMinify e limitada a geração estática a duas páginas simultâneas após timeouts da PokéAPI; revisar opções experimentais no passo 16.
-- [ ] Avançar para o Next.js 16 ou outra linha com suporte confirmada no momento da execução.
-- [ ] Adaptar o lint e a configuração do ESLint no ponto exigido pela atualização. No Next.js 16, `next lint` foi removido e o lint precisa ser executado separadamente do build.
+- [x] Avançar para o Next.js 16 (16.3.8 instalado), mantendo o Pages Router. Instalação, tipos, lint e 93 testes passam; build e verificação de navegador são registrados no baseline.
+- [x] Adaptar o lint e a configuração do ESLint: `next lint` foi removido e o projeto usa ESLint 10 com `eslint.config.mjs`, executado por `npm run lint` separado do build.
 - [ ] Revisar as opções de `next.config.js` e mudanças da ferramenta de compilação em cada versão.
 
 Next.js 14 é uma ponte de migração, não o destino de produção pretendido. Manter o Pages Router durante esta sequência. Atualizações de bibliotecas auxiliares devem ser feitas em passos separados quando puderem ser verificadas independentemente.
@@ -101,9 +101,9 @@ Critério por passo: tipos, lint, testes pertinentes, build e verificação dos 
 
 ### 5. Atualizar Tailwind CSS e daisyUI
 
-- [ ] Atualizar primeiro a base compatível de Tailwind 3, se isso facilitar a migração.
-- [ ] Planejar Tailwind 4 e daisyUI 5 como uma unidade compatível, conferindo o suporte aos navegadores desejados.
-- [ ] Adaptar a configuração do PostCSS, as importações de CSS, o tema e a ativação do modo escuro conforme os guias de migração.
+- [x] Atualizar a base de Tailwind 3: não foi necessário, a migração foi direto para o Tailwind 4.
+- [x] Tailwind 4.3.3 e daisyUI 5.7.47 instalados como unidade compatível; o suporte aos navegadores desejados deve ser conferido antes do deploy.
+- [x] Configuração adaptada: PostCSS com `@tailwindcss/postcss`, `@import "tailwindcss"`, `@plugin "daisyui"` e `@custom-variant dark` em `styles/globals.css`.
 - [ ] Comparar header, grid, cards, botões, detalhes e carrossel com a referência anterior em tela estreita e larga.
 
 A migração deve preservar a composição visual. Mudanças nos estilos padrão devem ser compensadas quando alterarem a aparência acordada. Novas cores ou acabamento serão discutidos em outro passo.
@@ -113,7 +113,7 @@ A migração deve preservar a composição visual. Mudanças nos estilos padrão
 - [ ] Validar a instalação a partir do lockfile escolhido.
 - [ ] Executar tipos, lint, testes e build de produção.
 - [ ] Verificar todos os fluxos essenciais na execução de produção.
-- [ ] Atualizar o README com versões, requisitos e comandos reais.
+- [x] Atualizar o README com versões, requisitos e comandos reais.
 - [ ] Apresentar os commits e eventuais limitações antes de discutir publicação ou merge.
 
 ## Fluxos essenciais para comparação
