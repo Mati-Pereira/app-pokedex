@@ -95,7 +95,7 @@ Production verification results and remaining limitations are recorded in [docs/
 
 ## Current dependency baseline
 
-The installed baseline (see `package.json` and `package-lock.json`) is Next.js 16.3.8, React and React DOM 19.3.0, TypeScript 5.9.3, `@types/node` 24.19.1, Tailwind CSS 4.3.3 and daisyUI 5.7.47. The app keeps the Pages Router. A clean `npm ci` installation is required; the automated suite currently passes 93 regression tests, together with `npm run typecheck`, `npm run lint` and `npm run format:check`. Build and browser verification results are recorded in [docs/PRODUCTION_BASELINE.md](docs/PRODUCTION_BASELINE.md).
+The installed baseline (see `package.json` and `package-lock.json`) is Next.js 16.3.8, React and React DOM 19.3.0, TypeScript 5.9.3, `@types/node` 24.19.1, Tailwind CSS 4.3.3 and daisyUI 5.7.47. The app keeps the Pages Router. A clean `npm ci` installation is required; the automated suite currently passes 93 regression tests, together with `npm run typecheck`, `npm run lint` and `npm run format:check`. `npm run build` generates all 1,355 static pages. Build and browser verification details are recorded in [docs/PRODUCTION_BASELINE.md](docs/PRODUCTION_BASELINE.md).
 
 ## Tech Stack
 

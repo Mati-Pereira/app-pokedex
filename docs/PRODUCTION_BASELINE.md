@@ -82,4 +82,5 @@ Recorded on October 5, 2026. This entry describes the installed dependency basel
 - Installed from `package.json` / `package-lock.json`: Next.js 16.3.8, React and React DOM 19.3.0, TypeScript 5.9.3, `@types/node` 24.19.1, Tailwind CSS 4.3.3 and daisyUI 5.7.47. The Pages Router is retained.
 - Automated checks passing: `npm test` (93 regression tests), `npm run typecheck`, `npm run lint` and `npm run format:check`.
 - `npm run format:check` failed on Windows because the checkout used CRLF while Prettier requires LF. `.gitattributes` now normalizes tracked text files to LF and the repository was reformatted with Prettier.
-- The production build and browser smoke test for this baseline are recorded below once executed.
+- `npm run build` passed with Next.js 16.3.8 (Turbopack): TypeScript finished, the production bundle compiled, and all 1,355 static pages were generated using 2 workers with `staticGenerationMaxConcurrency: 1`. Detail generation took about 10 seconds because the PokeAPI disk cache was already populated.
+- Production HTTP smoke test against `npm start` on http://localhost:3000: `/` returned 200 (34,557 bytes), `/bulbasaur` returned 200 (26,513 bytes), `/types?type=fire` returned 200 (16,756 bytes) and an unknown Pokemon path returned 404. This is an HTTP smoke test, not the full browser flow list from the earlier sections.

@@ -111,7 +111,7 @@ A migração deve preservar a composição visual. Mudanças nos estilos padrão
 ### 6. Revisão final
 
 - [ ] Validar a instalação a partir do lockfile escolhido.
-- [ ] Executar tipos, lint, testes e build de produção.
+- [x] Executar tipos, lint, testes e build de produção (93 testes; build gera as 1.355 páginas estáticas).
 - [ ] Verificar todos os fluxos essenciais na execução de produção.
 - [x] Atualizar o README com versões, requisitos e comandos reais.
 - [ ] Apresentar os commits e eventuais limitações antes de discutir publicação ou merge.
