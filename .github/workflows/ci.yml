@@ -34,9 +34,7 @@ jobs:
         run: npm test
 
       - name: Build
+        # The build fetches the PokeAPI catalog and pre-renders every detail page,
+        # so it requires network access and can take several minutes. Static
+        # generation concurrency is bounded in next.config.js.
         run: npm run build
-        env:
-          # Se o build falhar por timeout na PokeAPI, não bloqueia o CI
-          # (o build local já validou; CI foca em compilação/types/lint/tests)
-          # Remova esta linha se quiser build estrito no CI
-          NEXT_EXPERIMENTAL_STATIC_GENERATION_MAX_CONCURRENCY: '1'
