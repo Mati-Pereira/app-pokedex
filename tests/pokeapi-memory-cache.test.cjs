@@ -51,8 +51,12 @@ test('deduplicates concurrent requests and keeps them alive while one consumer r
   const cache = createPokeApiJsonCache({
     fetcher: (_url, { signal }) => {
       calls += 1;
-      signal.addEventListener('abort', () => { underlyingAborted = true; });
-      return new Promise(resolve => { resolveFetch = resolve; });
+      signal.addEventListener('abort', () => {
+        underlyingAborted = true;
+      });
+      return new Promise(resolve => {
+        resolveFetch = resolve;
+      });
     },
   });
   const firstController = new AbortController();
@@ -98,7 +102,14 @@ test('does not cache HTTP or JSON failures', async () => {
     fetcher: async () => {
       calls += 1;
       if (calls === 1) return response({}, 503);
-      if (calls === 2) return { ok: true, status: 200, json: async () => { throw new Error('Bad JSON'); } };
+      if (calls === 2)
+        return {
+          ok: true,
+          status: 200,
+          json: async () => {
+            throw new Error('Bad JSON');
+          },
+        };
       return response({ name: 'bulbasaur' });
     },
   });
@@ -112,7 +123,12 @@ test('does not cache HTTP or JSON failures', async () => {
 
 test('rejects URLs outside the fixed PokeAPI origin', async () => {
   let calls = 0;
-  const cache = createPokeApiJsonCache({ fetcher: async () => { calls += 1; return response({}); } });
+  const cache = createPokeApiJsonCache({
+    fetcher: async () => {
+      calls += 1;
+      return response({});
+    },
+  });
   await assert.rejects(
     cache.get('https://example.test/api/v2/pokemon/1', new AbortController().signal),
     /Untrusted PokeAPI URL/

@@ -132,9 +132,12 @@ function SearchField({
         screenReaderStatus={({ count }) => t(language, 'optionsAvailable', { count })}
         ariaLiveMessages={{
           guidance: () => t(language, 'keyboardGuidance'),
-          onChange: ({ action, label }) => action === 'clear' ? t(language, 'selectionCleared') : t(language, 'selected', { label }),
+          onChange: ({ action, label }) =>
+            action === 'clear'
+              ? t(language, 'selectionCleared')
+              : t(language, 'selected', { label }),
           onFilter: ({ resultsMessage }) => resultsMessage,
-          onFocus: ({ label, isSelected }) => isSelected ? `${label}, selecionado` : label,
+          onFocus: ({ label, isSelected }) => (isSelected ? `${label}, selecionado` : label),
         }}
         components={{ MenuList: VirtualizedMenuList }}
         styles={{
@@ -151,7 +154,7 @@ function SearchField({
           singleValue: base => ({ ...base, color: 'var(--select-text)' }),
           loadingMessage: base => ({ ...base, color: 'var(--select-muted)' }),
           noOptionsMessage: base => ({ ...base, color: 'var(--select-muted)' }),
-          menuList: base => ({ ...base, overflowY: 'hidden' } as typeof base),
+          menuList: base => ({ ...base, overflowY: 'hidden' }) as typeof base,
           option: (base, state) => ({
             ...base,
             backgroundColor: state.isSelected
@@ -173,7 +176,7 @@ function SearchField({
       />
       <button
         type="button"
-        className="min-h-12 min-w-12 rounded-r-full bg-pokedex p-3 text-center text-sm font-medium text-white hover:bg-pokedex-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pokedex dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus-visible:outline-blue-700"
+        className="bg-pokedex hover:bg-pokedex-hover focus-visible:outline-pokedex min-h-12 min-w-12 rounded-r-full p-3 text-center text-sm font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus-visible:outline-blue-700"
         onClick={onSearch}
         disabled={isDisabled || !canSearch}
         aria-busy={isSearching}

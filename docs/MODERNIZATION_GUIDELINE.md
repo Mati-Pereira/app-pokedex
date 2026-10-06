@@ -29,14 +29,14 @@ Os próximos commits serão locais na branch `chore/continue-modernization`. Pus
 
 Versões declaradas no `package.json` durante a elaboração deste guia:
 
-| Tecnologia | Versão atual |
-| --- | --- |
-| Next.js | 13.0.4 |
-| React / React DOM | 18.2.0 |
-| TypeScript | 4.9.3 |
+| Tecnologia                  | Versão atual    |
+| --------------------------- | --------------- |
+| Next.js                     | 13.0.4          |
+| React / React DOM           | 18.2.0          |
+| TypeScript                  | 4.9.3           |
 | ESLint / eslint-config-next | 8.28.0 / 13.0.4 |
-| Tailwind CSS | ^3.2.4 |
-| daisyUI | ^2.43.0 |
+| Tailwind CSS                | ^3.2.4          |
+| daisyUI                     | ^2.43.0         |
 
 O ambiente usado na execução inicial tinha Node.js 24.19.0. Isso não equivale a uma versão de Node documentada ou exigida pelo projeto.
 

@@ -14,8 +14,13 @@ const Toggle = () => {
   };
   return (
     <>
-      <button type="button" aria-label={t(language, 'theme')} title={t(language, 'theme')} className="min-h-11 min-w-11 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" onClick={toggleMode}>
-
+      <button
+        type="button"
+        aria-label={t(language, 'theme')}
+        title={t(language, 'theme')}
+        className="min-h-11 min-w-11 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+        onClick={toggleMode}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
@@ -47,7 +52,6 @@ const Toggle = () => {
             d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
           />
         </svg>
-
       </button>
     </>
   );

@@ -110,11 +110,15 @@ function Navbar() {
   return (
     <nav
       aria-label={t(language, 'navigation')}
-      className="border-b border-paper-border bg-paper-card p-3 transition-colors dark:border-slate-700 dark:bg-gray-900 sm:p-4 md:px-8 xl:px-16"
+      className="border-paper-border bg-paper-card border-b p-3 transition-colors sm:p-4 md:px-8 xl:px-16 dark:border-slate-700 dark:bg-gray-900"
       id="navbar"
     >
       <div className="container mx-auto flex flex-col items-center justify-between gap-4 md:flex-row">
-        <Link href="/" className="flex min-h-12 items-center rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-pokedex dark:focus-visible:outline-blue-700" aria-label={t(language, 'homeLink')}>
+        <Link
+          href="/"
+          className="focus-visible:outline-pokedex flex min-h-12 items-center rounded focus-visible:outline-2 focus-visible:outline-offset-4 dark:focus-visible:outline-blue-700"
+          aria-label={t(language, 'homeLink')}
+        >
           <span className="w-24 self-center sm:w-28">
             <img src="pokedex-logo.png" alt="Pokédex" />
           </span>
@@ -158,7 +162,7 @@ function Navbar() {
               aria-label={t(language, 'language')}
               value={language}
               onChange={event => setLanguage(event.target.value === 'en' ? 'en' : 'pt-BR')}
-              className="min-h-11 rounded-lg border border-paper-border bg-paper-card px-2 text-paper-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pokedex dark:border-slate-500 dark:bg-slate-800 dark:text-white dark:focus-visible:outline-blue-700"
+              className="border-paper-border bg-paper-card text-paper-ink focus-visible:outline-pokedex min-h-11 rounded-lg border px-2 focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-slate-500 dark:bg-slate-800 dark:text-white dark:focus-visible:outline-blue-700"
             >
               <option value="pt-BR">{t(language, 'portuguese')}</option>
               <option value="en">{t(language, 'english')}</option>
@@ -174,7 +178,11 @@ function Navbar() {
             </button>
           </div>
         )}
-        {searchError && <p role="alert" className="w-full text-sm font-semibold text-red-800 dark:text-red-300">{searchError}</p>}
+        {searchError && (
+          <p role="alert" className="w-full text-sm font-semibold text-red-800 dark:text-red-300">
+            {searchError}
+          </p>
+        )}
       </div>
     </nav>
   );

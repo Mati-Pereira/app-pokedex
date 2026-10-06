@@ -6,17 +6,17 @@ export const InputContext = createContext<InputContextProps>({
   },
 });
 interface Props {
-  children: ReactNode
+  children: ReactNode;
 }
 interface InputContextProps {
-  input: string
-  updateInput: (value: string) => void
+  input: string;
+  updateInput: (value: string) => void;
 }
 export const ContextInput = ({ children }: Props) => {
-  const [input, setInput] = useState('')
-  const updateInput = (value: string) => { setInput(value) }
-  
-  return (
-    <InputContext.Provider value={{ input, updateInput }} >{children}</InputContext.Provider>
-  )
-}
+  const [input, setInput] = useState('');
+  const updateInput = (value: string) => {
+    setInput(value);
+  };
+
+  return <InputContext.Provider value={{ input, updateInput }}>{children}</InputContext.Provider>;
+};

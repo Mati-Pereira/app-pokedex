@@ -1,5 +1,5 @@
 interface Props {
-  pokemonType: string
+  pokemonType: string;
 }
 
 import { useLanguage } from '../context/LanguageContext';

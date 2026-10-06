@@ -1,4 +1,3 @@
-
 # App Pokedex
 
 An app to look at the attributes of your favorite pokemon, such as its color in shiny mode

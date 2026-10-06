@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode } from 'react';
 
 interface GridProps {
   children: ReactNode;
@@ -11,4 +11,3 @@ export default function Grid({ children }: GridProps) {
     </div>
   );
 }
-

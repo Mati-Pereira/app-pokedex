@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: ["*"]
+    branches: ['*']
   pull_request:
-    branches: ["*"]
+    branches: ['*']
 
 jobs:
   ci:
@@ -17,8 +17,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
-          cache: "npm"
+          node-version: '24'
+          cache: 'npm'
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
@@ -39,4 +39,4 @@ jobs:
           # Se o build falhar por timeout na PokeAPI, não bloqueia o CI
           # (o build local já validou; CI foca em compilação/types/lint/tests)
           # Remova esta linha se quiser build estrito no CI
-          NEXT_EXPERIMENTAL_STATIC_GENERATION_MAX_CONCURRENCY: "1"
+          NEXT_EXPERIMENTAL_STATIC_GENERATION_MAX_CONCURRENCY: '1'
